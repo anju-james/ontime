@@ -20,7 +20,12 @@ defmodule OntimeWeb.Router do
   end
 
   # Other scopes may use custom stacks.
-  # scope "/api", OntimeWeb do
-  #   pipe_through :api
-  # end
+  scope "/api/v1", OntimeWeb do
+     pipe_through :api
+     resources "/flightstat", FlightStatController
+     resources "/airports", AirportController, except: [:new, :edit]
+     resources "/airlines", AirlineController, except: [:new, :edit]
+     resources "/routes", RouteController, except: [:new, :edit]
+     resources "/users", UserController, except: [:new, :edit]
+  end
 end

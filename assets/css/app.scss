@@ -1,0 +1,47 @@
+/* This file is for your main application css. */
+
+#footer {
+  position: fixed;
+  left: 0px;
+  bottom: 30px;
+  height: 30px;
+  width: 100%;
+  background: #999;
+}
+
+.drive-in-wrap {
+  overflow: hidden;
+  position: absolute;
+  min-height: 100vh;
+  width: 100%;
+  min-width: 36rem;
+  top: 0;
+  left: 0;
+  z-index: -10000;
+}
+
+.drive-in-media {
+  position: absolute;
+}
+
+.drive-in-media img {
+  -webkit-transition: opacity 0.5s ease-in-out;
+  -o-transition: opacity 0.5s ease-in-out;
+  transition: opacity 0.5s ease-in-out;
+  position: relative;
+}
+
+.drive-in-wrap {
+  position: absolute;
+  display: block;
+  transform: translate3d(-50%, -50%, 0px);
+  left: 50%;
+  top: 50%;;
+}
+
+.drive-in-video {
+  opacity: 1;
+  display: block;
+  width: 1440px;
+  height: auto;
+}

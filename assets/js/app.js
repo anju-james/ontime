@@ -11,7 +11,6 @@
 //
 // If you no longer want to use a dependency, remember
 // to also remove its path from "config.paths.watched".
-import "phoenix_html"
 
 // Import local files
 //
@@ -19,3 +18,22 @@ import "phoenix_html"
 // paths "./socket" or full ones "web/static/js/socket".
 
 // import socket from "./socket"
+import React from 'react';
+import ReactDOM from "react-dom";
+import OntimeApp from './ontimeapp';
+import store from './store';
+import {Provider} from 'react-redux';
+
+function init() {
+    let root = document.getElementById("root");
+    if(root ) {
+        ReactDOM.render(
+            <Provider store={store}>
+                <OntimeApp />
+            </Provider>, root);
+    }
+
+}
+
+$(init);
+
