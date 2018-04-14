@@ -1,7 +1,6 @@
 import React from 'react';
 import Button from 'material-ui/Button';
 import classNames from 'classnames';
-import TextField from 'material-ui/TextField';
 import {withStyles} from 'material-ui/styles';
 import IconButton from 'material-ui/IconButton';
 import Input, {InputLabel, InputAdornment} from 'material-ui/Input';
@@ -11,7 +10,6 @@ import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import {connect} from 'react-redux';
 import store, {empty_register_form} from './store';
 import {update_register_form} from './actions';
-import {TextValidator, ValidatorForm} from 'react-material-ui-form-validator';
 
 
 import Dialog, {
@@ -41,7 +39,10 @@ const styles = theme => ({
 class RegisterView extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {showPassword: false};
+        this.state = {
+            showPassword: false,
+            error: {}
+        };
         this.handleClick = this.handleClick.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -94,40 +95,57 @@ class RegisterView extends React.Component {
     handleSubmit(ev) {
         ev.preventDefault();
         let clear_passwords = {password: "", confirmpassword: ""}
+        let error = {};
         let register = this.props.register_form;
         if (!register.name || register.name.trim().length == 0) {
-            alert('Name is required');
-        } else if (!register.email || register.email.trim().length == 0) {
-            alert('Email is required');
-        } else if (!register.phonenumber || register.phonenumber.trim().length < 10 || register.phonenumber.trim().length > 10) {
-            alert('Enter valid phone number');
-        } else if (!register.password || register.password.trim().length == 0) {
-            alert('Password is missing');
-        } else if (!register.confirmpassword || register.confirmpassword.trim().length == 0) {
-            alert('Please confirm password');
-        } else if (register.password.trim().length < 8 || register.confirmpassword.trim().length < 8) {
-            alert("Please doesn't meet minimum length required (8)");
-        } else if (register.password != register.confirmpassword) {
-            alert('Password and confirm password doesnot match. Try again');
-            store.dispatch(update_register_form(clear_passwords));
-        } else if (!register.email.includes("@") || register.email.split("@").length != 2) {
-            alert('Not a valid email address. Try again');
-        } else {
-            this.createUser(register);
-            // redirect user to login page
+            error['name'] = 'Name is required';
         }
+
+        if (!register.email || register.email.trim().length == 0) {
+            error['email'] = 'Email is required';
+        } else if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,5})+$/.test(register.email))) {
+            error['email'] = 'Not a valid email id';
+        }
+
+        console.log("phonumber", register.phonenumber)
+        if (!register.phonenumber || register.phonenumber.trim().replace(" ", "").replace("-", "").length != 12) {
+            error['phonenumber'] = 'Enter valid phone number of format +1 XXX XXX XXXX';
+        } else if (!register.phonenumber.trim().startsWith("+1")) {
+            error['phonenumber'] = "Country code missing(+1) or not a US number"
+        }
+
+        //All conditions related to passwords
+        if (!register.password) {
+            error['password'] = 'Password is missing';
+        }
+        if (!register.confirmpassword || register.confirmpassword.trim().length == 0) {
+            error['confirmpassword'] = 'Confirm Password is missing';
+        }
+
+        if (register.password.trim().length < 8) {
+            error['password'] = "Password doesn't meet minimum length required (8)";
+        }
+
+        if (register.password != register.confirmpassword) {
+            error['confirmpassword'] = 'Password and confirm password does not match.';
+            store.dispatch(update_register_form(clear_passwords));
+        }
+
+        this.setState({error: error})
+        //  this.createUser(register);
+        // redirect user to login page
 
     }
 
 
-    /*handleMouseDownPassword(event){
+    handleMouseDownPassword(event){
         event.preventDefault();
     };
 
     handleClickShowPassword(){
         this.setState({ showPassword: !this.state.showPassword });
     };
-    */
+
 
     render() {
         let classes = this.props.classes;
@@ -138,50 +156,42 @@ class RegisterView extends React.Component {
                     open={true}
                     onClose={this.handleClick}
                     aria-labelledby="form-dialog-title">
-                    <ValidatorForm
-                        ref="form"
-                        onSubmit={this.handleSubmit}>
-                        <DialogTitle id="form-dialog-title">Register</DialogTitle>
-                        <DialogContent>
-                            <TextValidator
-                                autoFocus
-                                margin="dense"
-                                name="name"
-                                id="name"
-                                label="Name"
-                                type="text"
-                                value={register.name} onChange={this.handleChange}
-                                validators={['required']}
-                                errorMessages={['Name is required']}
-                                fullWidth
-                            />
-                            <TextValidator
-                                autoFocus
-                                margin="dense"
-                                name="email"
-                                id="email"
-                                label="Email Address"
-                                type="email"
-                                value={register.email} onChange={this.handleChange}
-                                validators={['required', 'isEmail']}
-                                errorMessages={['Email is required', 'email is not valid']}
-                                fullWidth
-                            />
-                            <TextValidator
-                                autoFocus
-                                margin="dense"
-                                name="phonenumber"
-                                id="phonenumber"
-                                label="Phone Number"
-                                type="text"
-                                value={register.phonenumber} onChange={this.handleChange}
-                                fullWidth
-                            />
+                    <DialogTitle id="form-dialog-title">Register</DialogTitle>
+                    <DialogContent>
 
-                            <TextField
+                        <FormControl className={classes.margin} error={this.state.error.name ? true : false}
+                                     aria-describedby="name-error-text" fullWidth required>
+                            <InputLabel htmlFor="name">Name</InputLabel>
+                            <Input id="name" name="name" value={register.name} onChange={this.handleChange}/>
+                            <FormHelperText
+                                id="name-error-text">{this.state.error.name ? this.state.error.name : null}</FormHelperText>
+                        </FormControl>
+
+                        <FormControl className={classes.margin} error={this.state.error.email ? true : false}
+                                     aria-describedby="name-error-text" fullWidth required>
+                            <InputLabel htmlFor="email">Email</InputLabel>
+                            <Input id="email" name="email" value={register.email} onChange={this.handleChange}/>
+                            <FormHelperText
+                                id="name-error-text">{this.state.error.email ? this.state.error.email : null}</FormHelperText>
+                        </FormControl>
+
+                        <FormControl className={classes.margin} error={this.state.error.phonenumber ? true : false}
+                                     aria-describedby="name-error-text" fullWidth required >
+                            <InputLabel htmlFor="phonenumber">Phone Number</InputLabel>
+                            <Input id="phonenumber" name="phonenumber" fullWidth value={register.phonenumber}
+                                   onChange={this.handleChange}/>
+                            <FormHelperText
+                                id="name-error-text">{this.state.error.phonenumber ? this.state.error.phonenumber : "+1 XXX XXX XXXX"}</FormHelperText>
+                        </FormControl>
+
+
+                        <FormControl className={classNames(classes.margin, classes.textField)}
+                                     error={this.state.error.password ? true : false} fullWidth required >
+                            <InputLabel htmlFor="adornment-password">Password</InputLabel>
+                            <Input
                                 id="password"
                                 name="password"
-                                label="Password"
+                                required="true"
                                 type={this.state.showPassword ? 'text' : 'password'}
                                 value={register.password} onChange={this.handleChange}
                                 endAdornment={
@@ -196,10 +206,17 @@ class RegisterView extends React.Component {
                                     </InputAdornment>
                                 }
                             />
-                            <TextField
+                            <FormHelperText
+                                id="name-error-text">{this.state.error.password ? this.state.error.password : null}</FormHelperText>
+
+                        </FormControl>
+                        <FormControl className={classNames(classes.margin, classes.textField)}
+                                     error={this.state.error.confirmpassword ? true : false} fullWidth required>
+                            <InputLabel htmlFor="adornment-password">Confirm Password</InputLabel>
+                            <Input
                                 id="confirmpassword"
                                 name="confirmpassword"
-                                label="Confirm Password"
+                                required="true"
                                 type={this.state.showPassword ? 'text' : 'password'}
                                 value={register.confirmpassword} onChange={this.handleChange}
                                 endAdornment={
@@ -214,19 +231,20 @@ class RegisterView extends React.Component {
                                     </InputAdornment>
                                 }
                             />
+                            <FormHelperText
+                                id="name-error-text">{this.state.error.confirmpassword ? this.state.error.confirmpassword : null}</FormHelperText>
 
+                        </FormControl>
 
-                        </DialogContent>
-                        <DialogActions>
-                            <Button type="submit" color="primary">
-                                Register
-                            </Button>
-                            <Button onClick={this.handleClick} color="primary">
-                                Cancel
-                            </Button>
-
-                        </DialogActions>
-                    </ValidatorForm>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={this.handleSubmit} color="primary">
+                            Register
+                        </Button>
+                        <Button onClick={this.handleClick} color="primary">
+                            Cancel
+                        </Button>
+                    </DialogActions>
                 </Dialog>
             </div>
         );
