@@ -6,6 +6,7 @@ defmodule OntimeWeb.UserController do
 
   action_fallback OntimeWeb.FallbackController
 
+
   def index(conn, _params) do
     users = Accounts.list_users()
     render(conn, "index.json", users: users)
@@ -39,4 +40,26 @@ defmodule OntimeWeb.UserController do
       send_resp(conn, :no_content, "")
     end
   end
+
+  def create(conn, %{"email" => email, "password" => password}) do
+    case Accounts.get_and_auth_user(email, password) do
+      {:ok, %User{} = user} ->
+        token = Phoenix.Token.sign(conn, "auth token", user.id)
+        conn
+        |> put_status(:created)
+        |> render("token.json", user: user, token: token)
+      {:error, _message} ->
+        conn
+        |> put_status(:unauthorized)
+        |> render(
+             OntimeWeb.ErrorView,
+             "unauthorized.json",
+             %{message: "Authentication failed. Invalid credentials or user doesnot exist"}
+           )
+    end
+
+
+  end
+
+
 end

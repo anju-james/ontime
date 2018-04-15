@@ -13,7 +13,12 @@ defmodule OntimeWeb.UserView do
   def render("user.json", %{user: user}) do
     %{id: user.id,
       name: user.name,
-      email: user.email,
-      password_hash: user.password_hash}
+      email: user.email}
+  end
+
+  def render("token.json", %{user: user, token: token}) do
+    %{data: %{id: user.id, name: user.name,
+      email: user.email, token: token}}
+
   end
 end

@@ -1,17 +1,16 @@
 import React from 'react';
 import Button from 'material-ui/Button';
 import classNames from 'classnames';
-import TextField from 'material-ui/TextField';
 import {withStyles} from 'material-ui/styles';
 import IconButton from 'material-ui/IconButton';
 import Input, {InputLabel, InputAdornment} from 'material-ui/Input';
 import {FormControl, FormHelperText} from 'material-ui/Form';
-import MenuItem from 'material-ui/Menu/MenuItem';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import {connect} from 'react-redux';
 import store, {empty_login_form} from './store';
 import {current_user, update_login_form} from "./actions";
+
 
 
 import Dialog, {
@@ -41,7 +40,10 @@ const styles = theme => ({
 class LoginView extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {showPassword: false};
+        this.state = {
+            showPassword: false,
+            error: {}
+        };
         this.handleClick = this.handleClick.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -55,15 +57,24 @@ class LoginView extends React.Component {
 
     handleSubmit(event) {
         event.preventDefault();
+        let error = {};
         let data = this.props.login_form;
         if (!data.email || data.email.trim().length == 0) {
-            alert('Email is required');
-        } else if (!data.password || data.password.trim().length == 0) {
-            alert('Password is missing');
-        } else if (!data.email.includes("@") || data.email.split("@").length != 2) {
-            alert('Not a valid email address. Try again');
+            error['email'] = 'Email is required';
+        } else if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,5})+$/.test(data.email))) {
+            error['email'] = 'Not a valid email id';
+        }
+
+        if (!data.password) {
+            error['password'] = 'Password is missing';
+        }
+
+        // if no errors
+        if(Object.keys(error).length == 0) {
+            this.login(data.email, data.password);
+            this.setState({error: error});
         } else {
-            login(data.email, data.password)
+            this.setState({error: error});
         }
     }
 
@@ -79,26 +90,26 @@ class LoginView extends React.Component {
     };
 
     handleClickShowPassword() {
-        this.setState({showPassword: !this.state.showPassword});
+        this.setState({showPassword: !this.state.showPassword, loggedin: false});
     };
 
     login(email, password) {
-        let jsonData = JSON.stringify({
-            name: email,
-            pass: password
-        });
-        $.ajax('/api/v1/users', {
+        let login = {email: email, password: password};
+        let closeDialog = this.handleClick;
+        $.ajax("/api/v1/users", {
             method: "POST",
             dataType: "json",
             contentType: "application/json; charset=UTF-8",
-            data: jsonData,
-            error: function (jqXHR, textStatus, errorThrown) {
+            data: JSON.stringify({email: email, password: password}),
+            error: function(jqXHR, textStatus, errorThrown) {
                 alert(textStatus + '- Login failed. Reason:' + jqXHR.responseText)
-            }, success: (resp) => {
-                store.dispatch(current_user(resp.data))
+            },
+            success: function (resp) {
+                store.dispatch(current_user(resp.data));
                 store.dispatch(update_login_form(empty_login_form));
+                closeDialog();
             }
-        })
+        });
     }
 
 
@@ -116,21 +127,21 @@ class LoginView extends React.Component {
                         <DialogContentText>
                             Login using your email and password
                         </DialogContentText>
-                        <TextField
-                            autoFocus
-                            margin="dense"
-                            name="email"
-                            id="email"
-                            value={login.email} onChange={this.handleChange}
-                            label="Email Address"
-                            type="email"
-                            fullWidth
-                        />
-                        <FormControl className={classNames(classes.margin, classes.textField)}>
+                        <FormControl className={classes.margin} error={this.state.error.email ? true : false}
+                                     aria-describedby="name-error-text" fullWidth required>
+                            <InputLabel htmlFor="email">Email</InputLabel>
+                            <Input id="email" name="email" value={login.email} onChange={this.handleChange}/>
+                            <FormHelperText
+                                id="name-error-text">{this.state.error.email ? this.state.error.email : null}</FormHelperText>
+                        </FormControl>
+
+                        <FormControl className={classNames(classes.margin, classes.textField)}
+                                     error={this.state.error.password ? true : false} fullWidth required>
                             <InputLabel htmlFor="adornment-password">Password</InputLabel>
                             <Input
                                 id="password"
                                 name="password"
+                                required="true"
                                 type={this.state.showPassword ? 'text' : 'password'}
                                 value={login.password} onChange={this.handleChange}
                                 endAdornment={
@@ -145,6 +156,9 @@ class LoginView extends React.Component {
                                     </InputAdornment>
                                 }
                             />
+                            <FormHelperText
+                                id="name-error-text">{this.state.error.password ? this.state.error.password : null}</FormHelperText>
+
                         </FormControl>
                     </DialogContent>
                     <DialogActions>
@@ -167,26 +181,3 @@ const mapStateToProps = state => {
 
 const Login = connect(mapStateToProps)(LoginView);
 export default withStyles(styles)(Login);
-
-
-/*<FormControl className={classNames(classes.margin, classes.textField)}>
-    <InputLabel htmlFor="adornment-password">Password</InputLabel>
-    <Input
-        id="adornment-password"
-        name="password"
-        //type={this.state.showPassword ? 'text' : 'password'}
-        //value={this.state.password}
-        value={login.password}  onChange={this.handleChange}
-        endAdornment={
-            <InputAdornment position="end">
-                <IconButton
-                    // aria-label="Toggle password visibility"
-                    // onClick={this.handleClickShowPassword}
-                    // onMouseDown={this.handleMouseDownPassword}
-                >
-                    /* {this.state.showPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-            </InputAdornment>
-        }
-    />
-</FormControl> */

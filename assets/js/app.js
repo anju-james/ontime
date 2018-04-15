@@ -20,7 +20,7 @@
 // import socket from "./socket"
 import React from 'react';
 import ReactDOM from "react-dom";
-import OntimeApp from './ontimeapp';
+import OntimeSpa from './ontime_spa';
 import store from './store';
 import {Provider} from 'react-redux';
 
@@ -29,7 +29,7 @@ function init() {
     if(root ) {
         ReactDOM.render(
             <Provider store={store}>
-                <OntimeApp />
+                <OntimeSpa />
             </Provider>, root);
     }
 

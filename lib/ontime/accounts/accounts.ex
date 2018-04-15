@@ -101,4 +101,10 @@ defmodule Ontime.Accounts do
   def change_user(%User{} = user) do
     User.changeset(user, %{})
   end
+
+  def get_and_auth_user(email, pass) do
+    user = Repo.one(from u in User, where: u.email == ^email)
+    Comeonin.Argon2.check_pass(user, pass)
+  end
+
 end

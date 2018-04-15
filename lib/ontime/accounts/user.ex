@@ -23,7 +23,7 @@ defmodule Ontime.Accounts.User do
     |> validate_required([:phonenumber])
     |> validate_length(:name, max: 255)
     |> validate_length(:email, max: 255)
-    |> validate_length(:phonenumber, max: 11)
+    |> validate_length(:phonenumber, min: 12, max: 12)
     |> unique_constraint(:email)
     |> validate_format(:email, ~r/@/, message: "Not a valid email address")
 

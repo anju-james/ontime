@@ -10,6 +10,11 @@ import {MuiThemeProvider, createMuiTheme} from 'material-ui/styles';
 import blue from 'material-ui/colors/blue';
 import Login from './login';
 import Register from './register';
+import {connect} from 'react-redux';
+import store from "./store";
+import {signout_user} from "./actions";
+import Snackbar from 'material-ui/Snackbar';
+import CloseIcon from '@material-ui/icons/Close';
 
 
 const theme = createMuiTheme({
@@ -28,14 +33,19 @@ const styles = {
         marginLeft: -12,
         marginRight: 20,
     },
+    close: {
+        width: theme.spacing.unit * 4,
+        height: theme.spacing.unit * 4,
+    },
 };
 
-export class MenuBar extends React.Component {
+export class MenuBarView extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {loginopen : false, registeropen: false};
+        this.state = {loginopen : false, registeropen: false, signedout : false};
         this.openLogin = this.openLogin.bind(this);
         this.openRegister = this.openRegister.bind(this);
+        this.signout = this.signout.bind(this);
 
     }
 
@@ -55,6 +65,29 @@ export class MenuBar extends React.Component {
         this.setState({registeropen: false});
     }
 
+    renderButtons() {
+        if(this.props.user && this.props.user.token ) {
+            return (<Button color="inherit" onClick={this.signout} >Signout</Button>);
+        } else {
+            return (
+                <div>
+                <Button color="inherit" onClick={this.openLogin}>Login</Button>
+                <Button color="inherit" onClick={this.openRegister}>Register</Button>
+                </div>);
+        }
+    }
+
+    signout() {
+        store.dispatch(signout_user());
+        this.setState({signedout: true});
+    }
+
+    handleClose = (event, reason) => {
+        this.setState({signedout: false});
+    };
+
+
+
 
     render() {
         let classes = this.props.classes;
@@ -68,10 +101,33 @@ export class MenuBar extends React.Component {
                         <Typography variant="title" color="inherit" className={classes.flex}>
                             OnTime
                         </Typography>
-                        <Button color="inherit" onClick={this.openLogin}>Login</Button>
-                        <Button color="inherit" onClick={this.openRegister}>Register</Button>
+                        {this.renderButtons()}
                         {this.state.loginopen ? <Login open={true} handleClose={() => this.closeLogin()} /> : null}
                         {this.state.registeropen ? <Register open={true} handleClose={() => this.closeRegister()} /> :null}
+                        <Snackbar
+                            anchorOrigin={{
+                                vertical: 'top',
+                                horizontal: 'center',
+                            }}
+                            open={this.state.signedout}
+                            autoHideDuration={2000}
+                            onClose={this.handleClose}
+                            SnackbarContentProps={{
+                                'aria-describedby': 'message-id',
+                            }}
+                            message={<span id="message-id">Logged out successfully.</span>}
+                            action={[
+                                <IconButton
+                                    key="close"
+                                    aria-label="Close"
+                                    color="inherit"
+                                    className={classes.close}
+                                    onClick={this.handleClose}
+                                >
+                                    <CloseIcon />
+                                </IconButton>,
+                            ]}
+                            />
                         <div>
 
                         </div>
@@ -84,4 +140,9 @@ export class MenuBar extends React.Component {
 }
 
 
+const mapStateToProps = state => {
+    return {user: state.current_user};
+};
+
+const MenuBar = connect(mapStateToProps)(MenuBarView);
 export default withStyles(styles)(MenuBar);

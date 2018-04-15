@@ -107,7 +107,6 @@ class RegisterView extends React.Component {
             error['email'] = 'Not a valid email id';
         }
 
-        console.log("phonumber", register.phonenumber)
         if (!register.phonenumber || register.phonenumber.trim().replace(" ", "").replace("-", "").length != 12) {
             error['phonenumber'] = 'Enter valid phone number of format +1 XXX XXX XXXX';
         } else if (!register.phonenumber.trim().startsWith("+1")) {

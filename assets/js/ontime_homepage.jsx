@@ -1,9 +1,10 @@
 import React from 'react';
 import Grid from 'material-ui/Grid';
 import MenuBar from './menu_bar';
+import FlightSearch from './flight_search';
+import Paper from 'material-ui/Paper';
 
-
-function OnTimeApp(props) {
+function OnTimeHomePage(props) {
     const {classes, theme} = props;
 
     return (
@@ -23,10 +24,15 @@ function OnTimeApp(props) {
             direction='row'
             justify='center'
         >
-
+            <Grid item xs={12} />
+            <Grid item xs={12} />
+            <Grid item xs={6} />
+            <Grid item xs={6} >
+                <FlightSearch />
+            </Grid>
         </Grid>
         </div>
     );
 }
 
-export default OnTimeApp;
+export default OnTimeHomePage;
