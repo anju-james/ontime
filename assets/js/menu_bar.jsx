@@ -14,6 +14,10 @@ import {connect} from 'react-redux';
 import store from "./store";
 import {signout_user} from "./actions";
 import { ToastContainer, toast, Flip } from 'react-toastify';
+import Hidden from 'material-ui/Hidden'
+import Menu, { MenuItem } from 'material-ui/Menu';
+import MoreVertIcon from '@material-ui/icons/MoreVert';
+
 
 const theme = createMuiTheme({
     palette: {
@@ -40,14 +44,16 @@ const styles = {
 export class MenuBarView extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {loginopen : false, registeropen: false};
+        this.state = {loginopen : false, registeropen: false, anchorEl: null};
         this.openLogin = this.openLogin.bind(this);
         this.openRegister = this.openRegister.bind(this);
         this.signout = this.signout.bind(this);
-
+        this.handleMenuClick = this.handleMenuClick.bind(this);
+        this.handleMenuClose = this.handleMenuClose.bind(this);
     }
 
     openLogin() {
+        this.handleMenuClose();
         this.setState({loginopen: true});
     }
 
@@ -56,12 +62,22 @@ export class MenuBarView extends React.Component {
     }
 
     openRegister() {
+        this.handleMenuClose();
         this.setState({registeropen: true});
     }
 
     closeRegister() {
         this.setState({registeropen: false});
     }
+
+    handleMenuClick(event) {
+        this.setState({ anchorEl: event.currentTarget });
+    };
+
+    handleMenuClose() {
+        this.setState({ anchorEl: null });
+    };
+
 
     renderButtons() {
         if(this.props.user && this.props.user.token ) {
@@ -76,14 +92,15 @@ export class MenuBarView extends React.Component {
     }
 
     signout() {
-        toast.warn('You have Signed Out!');
+        this.handleMenuClose();
+        toast.info('You have Signed Out!');
         store.dispatch(signout_user());
 
     }
 
     render() {
         let classes = this.props.classes;
-        console.log(this.props.history);
+        const { anchorEl } = this.state;
         return (
             <MuiThemeProvider theme={theme}>
                 <AppBar position="sticky" style={{backgroundColor: (this.props.transparent? "transparent" : "blue[500]")}}>
@@ -94,7 +111,32 @@ export class MenuBarView extends React.Component {
                         <Typography variant="title" color="inherit" className={classes.flex}>
                             OnTime
                         </Typography>
-                        {this.renderButtons()}
+                        <Hidden only={['sm', 'xs','md']}>
+                        {this.props.user && this.props.user.token ? <Button color="inherit" onClick={this.signout} >Sign out</Button>
+                            : <Button color="inherit" onClick={this.openLogin}>Login</Button>}
+                        {this.props.user && this.props.user.token ? null
+                            : <Button color="inherit" onClick={this.openRegister}>Register</Button>}
+                        </Hidden>
+                        <Hidden only={['lg','xl']}>
+                            <IconButton color="inherit"
+                                aria-owns={anchorEl ? 'simple-menu' : null}
+                                aria-haspopup="true"
+                                onClick={this.handleMenuClick}
+                            >
+                                <MoreVertIcon/>
+                            </IconButton>
+                            <Menu
+                                id="simple-menu"
+                                anchorEl={anchorEl}
+                                open={Boolean(anchorEl)}
+                                onClose={this.handleMenuClose}
+                            >
+                                {this.props.user && this.props.user.token ? <MenuItem onClick={this.signout}>Sign out</MenuItem>
+                                    : <MenuItem onClick={this.openLogin}>Login</MenuItem>}
+                                {this.props.user && this.props.user.token ? null
+                                    : <MenuItem onClick={this.openRegister}>Register</MenuItem>}
+                            </Menu>
+                        </Hidden>
                         {this.state.loginopen ? <Login open={true} handleClose={() => this.closeLogin()} /> : null}
                         {this.state.registeropen ? <Register open={true} handleClose={() => this.closeRegister()} /> :null}
                         <div>

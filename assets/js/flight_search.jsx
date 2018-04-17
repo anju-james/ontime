@@ -17,9 +17,10 @@ import Paper from 'material-ui/Paper';
 import { MenuItem } from 'material-ui/Menu';
 import Downshift from 'downshift';
 import {update_adv_search_form, update_airports} from "./actions";
-import store from './store';
+import store, {empty_adv_search_form} from './store';
 import {connect} from "react-redux";
 import keycode from 'keycode';
+import {toast} from 'react-toastify';
 
 
 
@@ -263,10 +264,10 @@ class FlightSearchView extends React.Component {
         let origin = this.props.adv_search_form.origin;
         let destination = this.props.adv_search_form.destination;
         if (origin && destination) {
+            store.dispatch(update_adv_search_form(empty_adv_search_form));
             this.props.history.push('/flightinfobyloc/'+origin+'/'+destination);
         } else {
-            //TODO toast
-            alert('Fields missing');
+            toast.error('Origin/Destination airports missing');
         }
 
     }

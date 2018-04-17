@@ -254,7 +254,7 @@ class FlightStatusView extends React.Component {
         console.log('rendering',)
         return (
             <MuiThemeProvider theme={theme}>
-                <MenuBar/>
+                <MenuBar history={this.props.history}/>
                 {this.state.loading ?
                     <Grid><Grid item xs={12}><LinearProgress color="secondary" /></Grid></Grid>:
                     <Grid
@@ -269,7 +269,7 @@ class FlightStatusView extends React.Component {
                             <FlightStatusCard key={index} index={index}
                                               flight_info={flight_status}
                                               airports={this.props.airports}
-                                              classes={classes}/></Grid>)
+                                              classes={classes} current_user={this.props.current_user}/></Grid>)
 
                     }
                     </Grid>
