@@ -7,7 +7,7 @@ defmodule OntimeWeb.AirportController do
   action_fallback OntimeWeb.FallbackController
 
   def index(conn, _params) do
-    airports = Aviation.list_airports()
+    airports = Aviation.list_airports_in_us()
     render(conn, "index.json", airports: airports)
   end
 

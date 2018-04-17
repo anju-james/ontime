@@ -27,5 +27,6 @@ defmodule OntimeWeb.Router do
      resources "/airlines", AirlineController, except: [:new, :edit]
      resources "/routes", RouteController, except: [:new, :edit]
      resources "/users", UserController, except: [:new, :edit]
+     get "/flightstatus", FlightStatController, :get_status
   end
 end

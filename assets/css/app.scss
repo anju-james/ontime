@@ -1,14 +1,5 @@
 /* This file is for your main application css. */
 
-#footer {
-  position: fixed;
-  left: 0px;
-  bottom: 30px;
-  height: 30px;
-  width: 100%;
-  background: #999;
-}
-
 .drive-in-wrap {
   overflow: hidden;
   position: absolute;
@@ -42,6 +33,10 @@
 .drive-in-video {
   opacity: 1;
   display: block;
-  width: 1440px;
+  width: 100vw;
   height: auto;
 }
+
+
+
+

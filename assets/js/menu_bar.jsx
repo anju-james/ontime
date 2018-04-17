@@ -93,7 +93,7 @@ export class MenuBarView extends React.Component {
         let classes = this.props.classes;
         return (
             <MuiThemeProvider theme={theme}>
-                <AppBar position="static" style={{backgroundColor: "transparent"}}>
+                <AppBar position="sticky" style={{backgroundColor: this.props.transparent? "transparent" : "primary"}}>
                     <Toolbar>
                         <IconButton className={classes.menuButton} color="inherit" aria-label="Menu">
                             <Flight/>

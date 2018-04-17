@@ -18,4 +18,8 @@ defmodule OntimeWeb.ErrorView do
   def render("unauthorized.json", %{message: message}) do
     %{data: message}
   end
+
+  def render("notfound.json", %{message: message}) do
+    %{data: message}
+  end
 end

@@ -17,4 +17,8 @@ defmodule OntimeWeb.FallbackController do
     |> put_status(:not_found)
     |> render(OntimeWeb.ErrorView, :"404")
   end
+
+  def call(conn, {:error, :no_content}) do
+    conn |> put_status(:no_content) |> render(OntimeWeb.ErrorView,"notfound.json")
+  end
 end

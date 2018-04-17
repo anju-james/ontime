@@ -1,5 +1,8 @@
 import {createStore, combineReducers} from 'redux';
-import {SIGNOUT, UPDATE_REGISTER_FORM, UPDATE_LOGIN_FORM, AUTHENTICATED} from './actions';
+import {
+    SIGNOUT, UPDATE_REGISTER_FORM, UPDATE_LOGIN_FORM, AUTHENTICATED, UPDATE_AIRPORTS,
+    UPDATE_FLIGHTINFO, UPDATE_ADV_SEARCH_FORM
+} from './actions';
 
 
 
@@ -14,7 +17,9 @@ register_form: {name : ""
            password: "",
            confirmpassword: "",
            }
- current_user: {}
+ current_user: {},
+ airports: [],
+ adv_search_form : {origin: "", destination: ""}
 
 }
  */
@@ -33,6 +38,11 @@ export let empty_register_form = {
     phonenumber: "",
     password: "",
     confirmpassword: ""
+};
+
+export let empty_adv_search_form = {
+    origin: "",
+    destination: ""
 };
 
 
@@ -66,10 +76,38 @@ function current_user(state = {}, action) {
     }
 }
 
+function airports(state = [], action) {
+    switch (action.type) {
+        case UPDATE_AIRPORTS:
+            return action.airports;
+        default:
+            return state;
+    }
+}
+
+
+function flightinfo(state=[], action) {
+    switch (action.type) {
+        case UPDATE_FLIGHTINFO:
+            return action.flightinfo;
+        default:
+            return state;
+    }
+}
+
+function adv_search_form(state= empty_adv_search_form, action) {
+    switch (action.type) {
+        case UPDATE_ADV_SEARCH_FORM:
+            return Object.assign({}, state, action.field_change);
+        default:
+            return state;
+    }
+}
 
 
 const onTimeApp = combineReducers({
-     current_user, register_form, login_form
+     current_user, register_form, login_form, airports,
+    flightinfo, adv_search_form
 });
 
 

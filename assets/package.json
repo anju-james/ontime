@@ -8,8 +8,11 @@
   "dependencies": {
     "@material-ui/icons": "^1.0.0-beta.42",
     "babel-preset-stage-2": "^6.24.1",
+    "downshift": "^1.31.7",
     "jquery": "^3.3.0",
+    "keycode": "^2.2.0",
     "material-ui": "^1.0.0-beta.41",
+    "moment": "^2.22.1",
     "phoenix": "file:../deps/phoenix",
     "phoenix_html": "file:../deps/phoenix_html",
     "react": "^16.2.0",

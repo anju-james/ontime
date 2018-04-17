@@ -1,17 +1,25 @@
 import React from 'react';
 import {withStyles} from 'material-ui/styles';
 import classnames from 'classnames';
-import Card, {CardHeader, CardMedia, CardContent, CardActions} from 'material-ui/Card';
+import Card, {CardHeader, CardContent, CardActions} from 'material-ui/Card';
 import Collapse from 'material-ui/transitions/Collapse';
 import Flight from '@material-ui/icons/Flight';
 import Avatar from 'material-ui/Avatar';
 import {FormControl, FormHelperText} from 'material-ui/Form';
-import Input, {InputLabel, InputAdornment} from 'material-ui/Input';
+import Input, {InputLabel} from 'material-ui/Input'
+import Chip from 'material-ui/Chip';
 import Button from 'material-ui/Button';
 import blue from "material-ui/colors/blue";
 import {MuiThemeProvider, createMuiTheme} from 'material-ui/styles';
 import ActionSettings from '@material-ui/icons/Settings';
 import TextField from 'material-ui/TextField';
+import Paper from 'material-ui/Paper';
+import { MenuItem } from 'material-ui/Menu';
+import Downshift from 'downshift';
+import {update_adv_search_form, update_airports} from "./actions";
+import store from './store';
+import {connect} from "react-redux";
+import keycode from 'keycode';
 
 
 
@@ -24,7 +32,7 @@ const theme = createMuiTheme({
 
 const styles = theme => ({
     card: {
-        maxWidth: 400,
+        maxWidth: 500,
     },
     media: {
         height: 194,
@@ -46,10 +54,6 @@ const styles = theme => ({
         margin: 10,
         backgroundColor: blue[500],
     },
-    container: {
-        display: 'flex',
-        flexWrap: 'wrap',
-    },
     formControl: {
         margin: theme.spacing.unit,
     },
@@ -59,15 +63,213 @@ const styles = theme => ({
     iconSmall: {
         fontSize: 20,
     },
+    container: {
+        flexGrow: 1,
+        position: 'relative',
+    },
+    paper: {
+        position: 'absolute',
+        zIndex: 1,
+        marginTop: theme.spacing.unit,
+        left: 0,
+        right: 0,
+    },
+    inputRoot: {
+        flexWrap: 'wrap',
+    },
+    chip: {
+        margin: `${theme.spacing.unit / 2}px ${theme.spacing.unit / 4}px`,
+    },
 
 });
 
-class FlightSearch extends React.Component {
-    state = {expanded: false};
+function renderInput(inputProps) {
+    const { InputProps, classes, ref, ...other } = inputProps;
+
+    return (
+        <TextField
+            InputProps={{
+                inputRef: ref,
+                classes: {
+                    root: classes.inputRoot,
+                },
+                ...InputProps,
+            }}
+            {...other}
+        />
+    );
+}
+
+function renderSuggestion({ suggestion, index, itemProps, highlightedIndex, selectedItem }) {
+
+    const isHighlighted = highlightedIndex === index;
+    const isSelected = (selectedItem || '').indexOf(suggestion.iata) > -1;
+
+    return (
+        <MenuItem
+            {...itemProps}
+            key={suggestion.iata}
+            selected={isHighlighted}
+            component="div"
+            style={{
+                fontWeight: isSelected ? 500 : 400,
+            }}
+        >
+            {suggestion.name}
+        </MenuItem>
+    );
+}
+
+function getSuggestions(inputValue, suggestions) {
+    let count = 0;
+
+    return suggestions.filter(suggestion => {
+        const keep =
+            (!inputValue || suggestion.city.toLowerCase().indexOf(inputValue.toLowerCase()) !== -1
+                || suggestion.name.toLowerCase().indexOf(inputValue.toLowerCase()) !== -1
+                || suggestion.iata.toLowerCase().indexOf(inputValue.toLowerCase()) !== -1
+                && count < 5);
+
+        if (keep) {
+            count += 1;
+        }
+
+        return keep;
+    });
+}
+
+
+class DownshiftMultiple extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            inputValue: '',
+            selectedItem: [],
+        };
+    }
+
+
+    handleKeyDown = event => {
+        const { inputValue, selectedItem } = this.state;
+        if (selectedItem.length && !inputValue.length && keycode(event) === 'backspace') {
+            let data = {};
+            data[this.props.name] = "";
+            store.dispatch(update_adv_search_form(data));
+            this.setState({
+                selectedItem: selectedItem.slice(0, selectedItem.length - 1),
+            });
+        }
+    };
+
+    handleInputChange = event => {
+        this.setState({ inputValue: event.target.value });
+    };
+
+    handleChange = item => {
+        let { selectedItem } = this.state;
+        selectedItem = [item];
+        let data = {};
+        data[this.props.name] = item;
+        store.dispatch(update_adv_search_form(data));
+        this.setState({
+            inputValue: '',
+            selectedItem,
+        });
+    };
+
+    handleDelete = item => () => {
+        const selectedItem = [...this.state.selectedItem];
+        selectedItem.splice(selectedItem.indexOf(item), 1);
+        let data = {};
+        data[this.props.name] = "";
+        store.dispatch(update_adv_search_form(data));
+        this.setState({ selectedItem });
+    };
+
+    render() {
+        const { classes } = this.props;
+        const { inputValue, selectedItem } = this.state;
+
+        return (
+            <Downshift inputValue={inputValue} onChange={this.handleChange} selectedItem={selectedItem}>
+                {({
+                      getInputProps,
+                      getItemProps,
+                      isOpen,
+                      inputValue: inputValue2,
+                      selectedItem: selectedItem2,
+                      highlightedIndex,
+                  }) => (
+                    <div className={classes.container}>
+                        {renderInput({
+                            fullWidth: true,
+                            classes,
+                            InputProps: getInputProps({
+                                startAdornment: selectedItem.map(item => (
+                                    <Chip
+                                        key={item}
+                                        tabIndex={-1}
+                                        label={item}
+                                        className={classes.chip}
+                                        onDelete={this.handleDelete(item)}
+                                    />
+                                )),
+                                onChange: this.handleInputChange,
+                                onKeyDown: this.handleKeyDown,
+                                placeholder: selectedItem.length == 0 ? this.props.placeholder: '',
+                                id: this.props.name,
+                                name: this.props.name
+                            }),
+                        })}
+                        {isOpen ? (
+                            <Paper className={classes.paper} square>
+                                {getSuggestions(inputValue2, this.props.airports).map((suggestion, index) =>
+                                    renderSuggestion({
+                                        suggestion,
+                                        index,
+                                        itemProps: getItemProps({ item: suggestion.iata }),
+                                        highlightedIndex,
+                                        selectedItem: selectedItem2,
+                                    }),
+                                )}
+                            </Paper>
+                        ) : null}
+                    </div>
+                )}
+            </Downshift>
+        );
+    }
+}
+
+class FlightSearchView extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {expanded: false};
+        this.handleAdvanceSearch = this.handleAdvanceSearch.bind(this);
+    }
+
+    componentDidMount() {
+        $.get('/api/v1/airports', (response) => {
+            let airports = response.data;
+            store.dispatch(update_airports(airports));
+        });
+    }
 
     handleExpandClick = () => {
         this.setState({expanded: !this.state.expanded});
     };
+
+    handleAdvanceSearch() {
+        let origin = this.props.adv_search_form.origin;
+        let destination = this.props.adv_search_form.destination;
+        if (origin && destination) {
+            this.props.history.push('/flightinfobyloc/'+origin+'/'+destination);
+        } else {
+            //TODO toast
+            alert('Fields missing');
+        }
+
+    }
 
     render() {
         const {classes} = this.props;
@@ -86,21 +288,25 @@ class FlightSearch extends React.Component {
                             title="Search Your Flight"
                             subheader="Use Advanced Search For More Options"
                         />
-
                         <CardContent>
-                            <div >
-                                <FormControl className={classes.formControl}
-                                             aria-describedby="name-error-text" >
-                                    <InputLabel htmlFor="flightnumber">Enter Flight Number</InputLabel>
-                                    <Input id="flightnumber" name="flightnumber" value="" onChange={this.handleChange}/>
+                            <div>
+                                <FormControl fullWidth={true} className={classes.formControl}
+                                             aria-describedby="name-error-text">
+                                    <DownshiftMultiple classes={classes} airports={this.props.airports} name="origin" placeholder="Origin"/>
+                                </FormControl>
+                                <FormControl fullWidth={true} className={classes.formControl}
+                                             aria-describedby="name-error-text">
+                                    <DownshiftMultiple classes={classes} airports={this.props.airports} name="destination" placeholder="Destination"/>
                                 </FormControl>
                                 <FormControl className={classes.formControl}>
-                                    <Button size="medium" color="primary" variant="raised">
-                                        Go
+                                    <Button variant="raised" color="primary" onClick={this.handleAdvanceSearch} className={classes.formControl}>
+                                        Search
                                     </Button>
                                 </FormControl>
                             </div>
                         </CardContent>
+
+
                         <CardActions className={classes.actions} disableActionSpacing>
 
                             <Button
@@ -113,26 +319,22 @@ class FlightSearch extends React.Component {
                             >
 
                                 Advanced Search
-                                <ActionSettings className={classnames(classes.rightIcon, classes.iconSmall)} />
+                                <ActionSettings className={classnames(classes.rightIcon, classes.iconSmall)}/>
                             </Button>
                         </CardActions>
                         <Collapse in={this.state.expanded} timeout="auto" unmountOnExit>
-
                             <CardContent>
                                 <div>
-                                <FormControl className={classes.formControl}
-                                             aria-describedby="name-error-text">
-                                    <InputLabel htmlFor="departure">Departure</InputLabel>
-                                    <Input id="departure" name="departure" value="" onChange={this.handleChange}/>
-                                </FormControl>
-                                <FormControl className={classes.formControl}
-                                             aria-describedby="name-error-text">
-                                    <InputLabel htmlFor="arrival">Arrival</InputLabel>
-                                    <Input id="arrival" name="arrival" value="" onChange={this.handleChange}/>
-                                </FormControl>
-                                <Button variant="raised" color="primary" className={classes.formControl}>
-                                    Search
-                                </Button>
+                                    <FormControl className={classes.formControl}
+                                                 aria-describedby="name-error-text">
+                                        <InputLabel htmlFor="flightnumber">Enter Flight Number</InputLabel>
+                                        <Input id="flightnumber" name="flightnumber" value="" onChange={this.handleChange}/>
+                                    </FormControl>
+                                    <FormControl className={classes.formControl}>
+                                        <Button size="medium" color="primary" variant="raised">
+                                            Go
+                                        </Button>
+                                    </FormControl>
                                 </div>
                             </CardContent>
 
@@ -144,6 +346,10 @@ class FlightSearch extends React.Component {
     }
 }
 
+const mapStateToProps = state => {
+    return {airports: state.airports, adv_search_form: state.adv_search_form}
+};
 
+const FlightSearch = connect(mapStateToProps)(FlightSearchView);
 export default withStyles(styles)(FlightSearch);
 

@@ -21,6 +21,11 @@ defmodule Ontime.Aviation do
     Repo.all(Airport)
   end
 
+  def list_airports_in_us do
+    list_airports
+    |> Enum.filter(fn(airport) -> airport.country == "United States" and airport.iata != "\\N" end)
+  end
+
   @doc """
   Gets a single airport.
 
