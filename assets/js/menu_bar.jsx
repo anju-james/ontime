@@ -13,7 +13,7 @@ import Register from './register';
 import {connect} from 'react-redux';
 import store from "./store";
 import {signout_user} from "./actions";
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer, toast, Flip } from 'react-toastify';
 
 const theme = createMuiTheme({
     palette: {
@@ -83,12 +83,12 @@ export class MenuBarView extends React.Component {
 
     render() {
         let classes = this.props.classes;
-
+        console.log(this.props.history);
         return (
             <MuiThemeProvider theme={theme}>
                 <AppBar position="sticky" style={{backgroundColor: (this.props.transparent? "transparent" : "blue[500]")}}>
                     <Toolbar>
-                        <IconButton className={classes.menuButton} color="inherit" aria-label="Menu">
+                        <IconButton onClick={() => this.props.history ? this.props.history.push("/") : null} className={classes.menuButton} color="inherit" aria-label="Menu">
                             <Flight/>
                         </IconButton>
                         <Typography variant="title" color="inherit" className={classes.flex}>
@@ -101,6 +101,18 @@ export class MenuBarView extends React.Component {
                         </div>
                     </Toolbar>
                 </AppBar>
+                <ToastContainer
+                    transition={Flip}
+                    position="top-center"
+                    autoClose={5000}
+                    hideProgressBar
+                    newestOnTop={false}
+                    closeOnClick
+                    rtl={false}
+                    pauseOnVisibilityChange={false}
+                    draggable={false}
+                    pauseOnHover={false}
+                />
             </MuiThemeProvider>
         )
     }

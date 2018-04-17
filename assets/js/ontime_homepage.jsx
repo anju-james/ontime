@@ -23,18 +23,7 @@ function OnTimeHomePage(props) {
                 </div>
             </div>
             </Hidden>
-            <MenuBar transparent={props.width == 'lg' || props.width =='xl' ? true : false}/>
-            <ToastContainer
-                position="top-right"
-                autoClose={5000}
-                hideProgressBar
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnVisibilityChange={false}
-                draggable={false}
-                pauseOnHover={false}
-            />
+            <MenuBar transparent={props.width == 'lg' || props.width =='xl' ? true : false} history={props.history}/>
             <Grid
                 container
                 spacing={16}

@@ -22,7 +22,7 @@ import Typography from 'material-ui/Typography'
 import Hidden from 'material-ui/Hidden'
 import withWidth from 'material-ui/utils/withWidth'
 import { LinearProgress,CircularProgress} from 'material-ui/Progress';
-
+import { toast } from 'react-toastify';
 
 const theme = createMuiTheme({
     palette: {
@@ -117,6 +117,10 @@ class FlightStatusCard extends React.Component {
     }
 
     handleButtonClick = () => {
+        if (!this.props.current_user || !this.props.current_user.token) {
+            toast.warn('You need to login before setting up alerts');
+            return;
+        }
         if (!this.state.loading) {
             this.setState(
                 {
@@ -276,7 +280,7 @@ class FlightStatusView extends React.Component {
 }
 
 const mapStateToProps = state => {
-    return {airports: state.airports}
+    return {airports: state.airports,current_user: state.current_user}
 };
 
 const FlightStatus = connect(mapStateToProps)(FlightStatusView)
