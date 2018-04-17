@@ -5,6 +5,8 @@ import FlightSearch from './flight_search';
 import FooterBar from './footer_bar';
 import Hidden from 'material-ui/Hidden'
 import withWidth from 'material-ui/utils/withWidth'
+import { ToastContainer, toast } from 'react-toastify';
+
 
 function OnTimeHomePage(props) {
     const {classes, theme} = props;
@@ -21,7 +23,18 @@ function OnTimeHomePage(props) {
                 </div>
             </div>
             </Hidden>
-            <MenuBar transparent={true}/>
+            <MenuBar transparent={props.width == 'lg' || props.width =='xl' ? true : false}/>
+            <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnVisibilityChange={false}
+                draggable={false}
+                pauseOnHover={false}
+            />
             <Grid
                 container
                 spacing={16}

@@ -10,8 +10,7 @@ import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import {connect} from 'react-redux';
 import store, {empty_login_form} from './store';
 import {current_user, update_login_form} from "./actions";
-
-
+import { ToastContainer, toast } from 'react-toastify';
 
 import Dialog, {
     DialogActions,
@@ -102,11 +101,13 @@ class LoginView extends React.Component {
             contentType: "application/json; charset=UTF-8",
             data: JSON.stringify({email: email, password: password}),
             error: function(jqXHR, textStatus, errorThrown) {
-                alert(textStatus + '- Login failed. Reason:' + jqXHR.responseText)
+                let response = JSON.parse(jqXHR.responseText);
+                toast.error(response.data);
             },
             success: function (resp) {
                 store.dispatch(current_user(resp.data));
                 store.dispatch(update_login_form(empty_login_form));
+                toast.success('✈️ Welcome Back!');
                 closeDialog();
             }
         });

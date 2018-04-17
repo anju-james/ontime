@@ -13,9 +13,7 @@ import Register from './register';
 import {connect} from 'react-redux';
 import store from "./store";
 import {signout_user} from "./actions";
-import Snackbar from 'material-ui/Snackbar';
-import CloseIcon from '@material-ui/icons/Close';
-
+import { ToastContainer, toast } from 'react-toastify';
 
 const theme = createMuiTheme({
     palette: {
@@ -42,7 +40,7 @@ const styles = {
 export class MenuBarView extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {loginopen : false, registeropen: false, signedout : false};
+        this.state = {loginopen : false, registeropen: false};
         this.openLogin = this.openLogin.bind(this);
         this.openRegister = this.openRegister.bind(this);
         this.signout = this.signout.bind(this);
@@ -78,22 +76,17 @@ export class MenuBarView extends React.Component {
     }
 
     signout() {
+        toast.warn('You have Signed Out!');
         store.dispatch(signout_user());
-        this.setState({signedout: true});
+
     }
-
-    handleClose = (event, reason) => {
-        this.setState({signedout: false});
-    };
-
-
-
 
     render() {
         let classes = this.props.classes;
+
         return (
             <MuiThemeProvider theme={theme}>
-                <AppBar position="sticky" style={{backgroundColor: this.props.transparent? "transparent" : "primary"}}>
+                <AppBar position="sticky" style={{backgroundColor: (this.props.transparent? "transparent" : "blue[500]")}}>
                     <Toolbar>
                         <IconButton className={classes.menuButton} color="inherit" aria-label="Menu">
                             <Flight/>
@@ -104,32 +97,7 @@ export class MenuBarView extends React.Component {
                         {this.renderButtons()}
                         {this.state.loginopen ? <Login open={true} handleClose={() => this.closeLogin()} /> : null}
                         {this.state.registeropen ? <Register open={true} handleClose={() => this.closeRegister()} /> :null}
-                        <Snackbar
-                            anchorOrigin={{
-                                vertical: 'top',
-                                horizontal: 'center',
-                            }}
-                            open={this.state.signedout}
-                            autoHideDuration={2000}
-                            onClose={this.handleClose}
-                            SnackbarContentProps={{
-                                'aria-describedby': 'message-id',
-                            }}
-                            message={<span id="message-id">Logged out successfully.</span>}
-                            action={[
-                                <IconButton
-                                    key="close"
-                                    aria-label="Close"
-                                    color="inherit"
-                                    className={classes.close}
-                                    onClick={this.handleClose}
-                                >
-                                    <CloseIcon />
-                                </IconButton>,
-                            ]}
-                            />
                         <div>
-
                         </div>
                     </Toolbar>
                 </AppBar>

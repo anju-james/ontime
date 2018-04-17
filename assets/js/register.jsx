@@ -10,6 +10,7 @@ import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import {connect} from 'react-redux';
 import store, {empty_register_form} from './store';
 import {update_register_form} from './actions';
+import { toast } from 'react-toastify';
 
 
 import Dialog, {
@@ -18,6 +19,7 @@ import Dialog, {
     DialogContentText,
     DialogTitle,
 } from 'material-ui/Dialog';
+
 
 const styles = theme => ({
     root: {
@@ -84,9 +86,10 @@ class RegisterView extends React.Component {
             contentType: "application/json; charset=UTF-8",
             data: jsonData,
             error: function (jqXHR, textStatus, errorThrown) {
-                alert(textStatus + '- Creating user failed. Reason:' + jqXHR.responseText)
+                let response = JSON.parse(jqXHR.responseText);
+                toast.error(response.data);
             }, success: (resp) => {
-                alert("User account for  '" + email + "' created successfully");
+                toast.success("User account for  '" + email + "' created successfully");
                 this.handleClick();
             }
         });
@@ -130,9 +133,10 @@ class RegisterView extends React.Component {
             store.dispatch(update_register_form(clear_passwords));
         }
 
+        if (Object.keys(error).length == 0) {
+            this.createUser(register);
+        }
         this.setState({error: error})
-        //  this.createUser(register);
-        // redirect user to login page
 
     }
 

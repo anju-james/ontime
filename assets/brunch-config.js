@@ -48,6 +48,12 @@ exports.config = {
             // Do not use ES6 compiler in vendor code
             ignore: [/vendor/],
             presets: ['env', 'react', 'es2015', 'stage-2'],
+        },
+        sass: {
+            options: {
+                includePaths: ["node_modules/react-toastify/scss"],
+                precision: 8,
+            }
         }
     },
 
