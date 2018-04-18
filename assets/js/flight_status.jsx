@@ -248,7 +248,7 @@ class FlightStatusView extends React.Component {
     render() {
         const {classes} = this.props;
         if (!this.props.match.params.id &&
-            (!this.props.match.params.src && !this.props.match.params.dest)) {
+             (!this.props.match.params.src && !this.props.match.params.dest && !this.props.match.params.traveldate)) {
             return (<Redirect to='/'/>);
         }
         return (

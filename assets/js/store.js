@@ -19,7 +19,7 @@ register_form: {name : ""
            }
  current_user: {},
  airports: [],
- adv_search_form : {origin: "", destination: ""}
+ adv_search_form : {origin: "", destination: "", traveldate: ""}
 
 }
  */
@@ -42,7 +42,8 @@ export let empty_register_form = {
 
 export let empty_adv_search_form = {
     origin: "",
-    destination: ""
+    destination: "",
+    traveldate: "",
 };
 
 

@@ -16,7 +16,7 @@ import TextField from 'material-ui/TextField';
 import Paper from 'material-ui/Paper';
 import { MenuItem } from 'material-ui/Menu';
 import Downshift from 'downshift';
-import {update_adv_search_form, update_airports} from "./actions";
+import {update_adv_search_form, update_airports, update_login_form} from "./actions";
 import store, {empty_adv_search_form} from './store';
 import {connect} from "react-redux";
 import keycode from 'keycode';
@@ -247,6 +247,7 @@ class FlightSearchView extends React.Component {
         super(props);
         this.state = {expanded: false};
         this.handleAdvanceSearch = this.handleAdvanceSearch.bind(this);
+        this.handleChange = this.handleChange.bind(this);
     }
 
     componentDidMount() {
@@ -260,14 +261,22 @@ class FlightSearchView extends React.Component {
         this.setState({expanded: !this.state.expanded});
     };
 
+    handleChange(event) {
+        let tgt = $(event.target);
+        let data = {};
+        data[tgt.attr('name')] = tgt.val();
+        store.dispatch(update_adv_search_form(data));
+    };
+
     handleAdvanceSearch() {
         let origin = this.props.adv_search_form.origin;
         let destination = this.props.adv_search_form.destination;
-        if (origin && destination) {
+        let traveldate = this.props.adv_search_form.traveldate;
+        if (origin && destination && traveldate) {
             store.dispatch(update_adv_search_form(empty_adv_search_form));
-            this.props.history.push('/flightinfobyloc/'+origin+'/'+destination);
+            this.props.history.push('/flightinfobyloc/'+origin+'/'+destination+ '/'+traveldate);
         } else {
-            toast.error('Origin/Destination airports missing');
+            toast.error('Origin/Destination airports & travel date are needed to search');
         }
 
     }
@@ -299,6 +308,19 @@ class FlightSearchView extends React.Component {
                                              aria-describedby="name-error-text">
                                     <DownshiftMultiple classes={classes} airports={this.props.airports} name="destination" placeholder="Destination"/>
                                 </FormControl>
+                                <FormControl className={classes.formControl}>
+                                    <TextField
+                                        id="traveldate"
+                                        name="traveldate"
+                                        label="Flight Date"
+                                        type="date"
+                                        className={classes.textField}
+                                        onChange={this.handleChange}
+                                        InputLabelProps={{
+                                            shrink: true,
+                                        }}
+                                    />
+                                    </FormControl>
                                 <FormControl className={classes.formControl}>
                                     <Button variant="raised" color="primary" onClick={this.handleAdvanceSearch} className={classes.formControl}>
                                         Search
