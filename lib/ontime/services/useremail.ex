@@ -1,4 +1,4 @@
-defmodule Ontime.EmailService.UserEmail do
+defmodule Ontime.MessageService.UserEmail do
   import Swoosh.Email
 
   def welcome(user) do

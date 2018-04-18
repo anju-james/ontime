@@ -46,7 +46,8 @@ defmodule Ontime.Mixfile do
       {:comeonin, "~> 4.0"},
       {:argon2_elixir, "~> 1.2"},
       {:distillery, "~> 1.5", runtime: false},
-      {:swoosh, "~> 0.13"}]
+      {:swoosh, "~> 0.13"},
+      {:phone, "~> 0.4.3"}]
 
 
   end

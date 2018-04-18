@@ -251,7 +251,6 @@ class FlightStatusView extends React.Component {
             (!this.props.match.params.src && !this.props.match.params.dest)) {
             return (<Redirect to='/'/>);
         }
-        console.log('rendering',)
         return (
             <MuiThemeProvider theme={theme}>
                 <MenuBar history={this.props.history}/>

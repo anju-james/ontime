@@ -15,7 +15,8 @@ defmodule OntimeWeb.UserController do
   def create(conn, %{"user" => user_params}) do
     with {:ok, %User{} = user} <- Accounts.create_user(user_params) do
 
-      Ontime.EmailService.send_email({:register, user})
+      Ontime.MessageService.send_message({:email, :register, user})
+      Ontime.MessageService.send_message({:sms, :register, user})
 
       conn
       |> put_status(:created)
