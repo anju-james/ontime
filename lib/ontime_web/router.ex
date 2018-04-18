@@ -29,4 +29,13 @@ defmodule OntimeWeb.Router do
      resources "/users", UserController, except: [:new, :edit]
      get "/flightstatus", FlightStatController, :get_status
   end
+
+
+  scope "/auth", OntimeWeb do
+    pipe_through :browser
+
+    get "/:provider", AuthController, :request
+    get "/:provider/callback", AuthController, :callback
+  end
+
 end

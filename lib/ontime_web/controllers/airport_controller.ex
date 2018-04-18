@@ -3,11 +3,12 @@ defmodule OntimeWeb.AirportController do
 
   alias Ontime.Aviation
   alias Ontime.Aviation.Airport
+  alias Ontime.AviationAgent
 
   action_fallback OntimeWeb.FallbackController
 
   def index(conn, _params) do
-    airports = Aviation.list_airports_in_us()
+    airports = AviationAgent.get_airports()
     render(conn, "index.json", airports: airports)
   end
 
