@@ -26,6 +26,10 @@ config :logger, :console,
 config :ontime, :aviationedge,
   api_key: System.get_env("AVIATIONEDGE_KEY")
 
+config :ontime, :flightstats,
+   app_id: System.get_env("FLIGHTSTATS_APP_ID"),
+   app_key: System.get_env("FLIGHTSTATS_APP_KEY")
+
 config :ontime, :nexmo,
        NEXMO_API_KEY: System.get_env("NEXMO_API_KEY"),
        NEXMO_API_SECRET: System.get_env("NEXMO_API_SECRET")

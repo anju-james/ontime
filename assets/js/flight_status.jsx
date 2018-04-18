@@ -23,6 +23,8 @@ import Hidden from 'material-ui/Hidden'
 import withWidth from 'material-ui/utils/withWidth'
 import { LinearProgress,CircularProgress} from 'material-ui/Progress';
 import { toast } from 'react-toastify';
+import Paper from 'material-ui/Paper';
+
 
 const theme = createMuiTheme({
     palette: {
@@ -66,6 +68,11 @@ const styles = {
         left: -6,
         zIndex: 1,
     },
+    root: theme.mixins.gutters({
+        paddingTop: 16,
+        paddingBottom: 16,
+        marginTop: theme.spacing.unit * 3,
+    }),
 
 };
 
@@ -80,20 +87,20 @@ class FlightStatusCard extends React.Component {
     }
 
     renderStepper(status) {
-        if (status == 'scheduled') {
+        if (status == 'S') {
             return (<Hidden smDown><Stepper><Step key="S"><StepButton completed={true}>Scheduled
             </StepButton></Step><Step key="E"><StepButton completed={false}>En-route
             </StepButton></Step>
                 <Step key="L"><StepButton completed={false}>Landed
                 </StepButton></Step></Stepper></Hidden>);
-        } else if (status == 'active') {
+        } else if (status == 'A') {
             return (<Hidden smDown><Stepper><Step key="S"><StepButton completed={true}>Scheduled
             </StepButton></Step>
                 <Step key="E"><StepButton completed={true}>En-route
                 </StepButton></Step><Step key="L"><StepButton completed={false}>Landed
                 </StepButton></Step></Stepper></Hidden>);
 
-        } else if (status == 'landed') {
+        } else if (status == 'L') {
             return (<Hidden smDown><Stepper><Step key="S"><StepButton completed={true}>Scheduled
             </StepButton></Step>
                 <Step key="E"><StepButton completed={true}>En-route
@@ -141,6 +148,7 @@ class FlightStatusCard extends React.Component {
 
     render() {
         const {classes} = this.props;
+        const flight_info = this.props.flight_info;
 
         return (
             <MuiThemeProvider theme={theme}>
@@ -154,24 +162,24 @@ class FlightStatusCard extends React.Component {
                         <CardContent>
                             <ListItem>
                                 <Chip
-                                    label={this.props.flight_info.flight.iataNumber}
+                                    label={flight_info.carrierFsCode + flight_info.flightNumber}
                                     className={classes.chip}
                                 />
-                                <ListItemText primary={this.props.flight_info.airline.name}/>
+                                <ListItemText primary={this.props.airline_name_map[flight_info.carrierFsCode]}/>
                             </ListItem>
 
                             <ListItem>
                                 <ListItemIcon>
                                     <FlightTakeoff nativeColor="blue"/>
                                 </ListItemIcon>
-                                <ListItemText primary={this.props.flight_info.departure.iataCode}/>
+                                <ListItemText primary={flight_info.departureAirportFsCode}/>
                                 <ListItemText
-                                    primary={moment(this.props.flight_info.departure.scheduledTime).format('MM/DD/YYYY h:mm a')}/>
+                                    primary={moment(flight_info.departureDate.dateLocal).format('MM/DD/YYYY h:mm a')}/>
                                 <Tooltip id="tooltip-origin-terminal" title="Boarding Terminal">
-                                    <ListItemText primary={this.props.flight_info.departure.terminal}/>
+                                    <ListItemText primary={flight_info.airportResources.departureTerminal}/>
                                 </Tooltip>
                                 <Tooltip id="tooltip-origin-gate" title="Boarding Gate">
-                                    <ListItemText primary={this.props.flight_info.departure.gate} color="primary"/>
+                                    <ListItemText primary={flight_info.airportResources.departureGate} color="primary"/>
                                 </Tooltip>
                             </ListItem>
 
@@ -179,17 +187,17 @@ class FlightStatusCard extends React.Component {
                                 <ListItemIcon>
                                     <FlightLand nativeColor="red"/>
                                 </ListItemIcon>
-                                <ListItemText primary={this.props.flight_info.arrival.iataCode}/>
+                                <ListItemText primary={flight_info.arrivalAirportFsCode}/>
                                 <ListItemText
-                                    primary={moment(this.props.flight_info.arrival.scheduledTime).format('MM/DD/YYYY h:mm a')}/>
+                                    primary={moment(flight_info.arrivalDate.dateLocal).format('MM/DD/YYYY h:mm a')}/>
                                 <Tooltip id="tooltip-arrival-terminal" title="Arrival Terminal">
-                                    <ListItemText primary={this.props.flight_info.arrival.terminal}/>
+                                    <ListItemText primary={flight_info.airportResources.arrivalTerminal}/>
                                 </Tooltip>
                                 <Tooltip id="tooltip-arrival-gate" title="Arrival Gate">
-                                    <ListItemText primary={this.props.flight_info.arrival.gate}/>
+                                    <ListItemText primary={flight_info.airportResources.arrivalGate}/>
                                 </Tooltip>
                             </ListItem>
-                            {this.renderStepper(this.props.flight_info.status)}
+                            {this.renderStepper(flight_info.status)}
                         </CardContent>
                         <CardActions>
                             <div className={classes.wrapper}>
@@ -216,20 +224,21 @@ class FlightStatusCard extends React.Component {
 class FlightStatusView extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {flightinfo: [], loading: true}
+        this.state = {flightinfo: null, loading: true}
     }
 
     componentDidMount() {
         if (this.props.match.params.id) {
             $.get('/api/v1/flightstatus', {id: this.props.match.params.id}, (response) => {
                 let flightinfo = response.data;
-                this.setState({flightinfo: flightinfo});
+                this.setState({flightinfo: null});
 
             });
-        } else if (this.props.match.params.src && this.props.match.params.dest) {
+        } else if (this.props.match.params.src && this.props.match.params.dest && this.props.match.params.traveldate) {
             $.get('/api/v1/flightstatus', {
                 src: this.props.match.params.src,
-                dest: this.props.match.params.dest
+                dest: this.props.match.params.dest,
+                traveldate: this.props.match.params.traveldate
             }, (response, status, jqXHR) => {
                 if (jqXHR.status == 200) {
                     let flightinfo = response.data;
@@ -238,7 +247,7 @@ class FlightStatusView extends React.Component {
                 } else {
                     //TODO toast
                     alert('Search Failed to Yield Any Result');
-                    this.setState({flightinfo: [], loading: false});
+                    this.setState({flightinfo: null, loading: false});
                 }
 
             });
@@ -251,26 +260,48 @@ class FlightStatusView extends React.Component {
              (!this.props.match.params.src && !this.props.match.params.dest && !this.props.match.params.traveldate)) {
             return (<Redirect to='/'/>);
         }
+        let flightdata = this.state.flightinfo;
+        let airline_name_map = {};
+        if (flightdata) {
+            flightdata.appendix.airlines.forEach(airline => airline_name_map[airline.fs] = airline.name);
+            flightdata.flightStatuses = flightdata.flightStatuses.filter((status) => status.airportResources);
+        }
+
         return (
             <MuiThemeProvider theme={theme}>
                 <MenuBar history={this.props.history}/>
                 {this.state.loading ?
                     <Grid><Grid item xs={12}><LinearProgress color="secondary" /></Grid></Grid>:
                     <Grid
-                    container
-                    spacing={24}
-                    alignItems='center'
-                    direction='row'
-                    justify='center'>
-                    <Grid key={-1} item xs={12}/>
-                    {this.state.flightinfo.map((flight_status, index) =>
-                        <Grid key={index} item xl={4} md={6} lg={4} xs={12} s={12}>
-                            <FlightStatusCard key={index} index={index}
-                                              flight_info={flight_status}
-                                              airports={this.props.airports}
-                                              classes={classes} current_user={this.props.current_user}/></Grid>)
+                        container
+                        spacing={24}
+                        alignItems='center'
+                        direction='row'
+                        justify='center'>
+                        <Grid key={-1} item xs={12}>
+                            <Paper className={classes.root} elevation={4}>
+                                <Typography variant="headline" component="h3">
+                                    {flightdata.appendix.airports[0].name + ', '
+                                    + flightdata.appendix.airports[0].city + ' -- '
+                                    + flightdata.appendix.airports[1].name + ', '
+                                    + flightdata.appendix.airports[1].city
+                                    }
+                                </Typography>
+                                <Typography variant="subheading">
+                                    {flightdata.flightStatuses.length +' Matching Search Results.'}
+                                </Typography>
+                            </Paper>
 
-                    }
+                        </Grid>
+                        {flightdata.flightStatuses.map((flight_status, index) =>
+                            <Grid key={index} item xl={4} md={6} lg={4} xs={12} s={12}>
+                                <FlightStatusCard key={flight_status.flightId} index={index}
+                                                  flight_info={flight_status}
+                                                  airports={this.props.airports}
+                                                  airline_name_map={airline_name_map}
+                                                  classes={classes} current_user={this.props.current_user}/></Grid>)
+
+                        }
                     </Grid>
                 }
             </MuiThemeProvider>
