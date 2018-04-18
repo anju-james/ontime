@@ -10,7 +10,7 @@ import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import {connect} from 'react-redux';
 import store, {empty_register_form} from './store';
 import {update_register_form} from './actions';
-import { toast } from 'react-toastify';
+import {toast} from 'react-toastify';
 
 
 import Dialog, {
@@ -89,7 +89,7 @@ class RegisterView extends React.Component {
                 let response = JSON.parse(jqXHR.responseText);
                 toast.error(response.data);
             }, success: (resp) => {
-                toast.success("User account for  '" + email + "' created successfully");
+                toast.success("Account created. Please proceed to login using your new credentials. Check your email for details.");
                 this.handleClick();
             }
         });
@@ -141,12 +141,12 @@ class RegisterView extends React.Component {
     }
 
 
-    handleMouseDownPassword(event){
+    handleMouseDownPassword(event) {
         event.preventDefault();
     };
 
-    handleClickShowPassword(){
-        this.setState({ showPassword: !this.state.showPassword });
+    handleClickShowPassword() {
+        this.setState({showPassword: !this.state.showPassword});
     };
 
 
@@ -179,7 +179,7 @@ class RegisterView extends React.Component {
                         </FormControl>
 
                         <FormControl className={classes.margin} error={this.state.error.phonenumber ? true : false}
-                                     aria-describedby="name-error-text" fullWidth required >
+                                     aria-describedby="name-error-text" fullWidth required>
                             <InputLabel htmlFor="phonenumber">Phone Number</InputLabel>
                             <Input id="phonenumber" name="phonenumber" fullWidth value={register.phonenumber}
                                    onChange={this.handleChange}/>
@@ -189,7 +189,7 @@ class RegisterView extends React.Component {
 
 
                         <FormControl className={classNames(classes.margin, classes.textField)}
-                                     error={this.state.error.password ? true : false} fullWidth required >
+                                     error={this.state.error.password ? true : false} fullWidth required>
                             <InputLabel htmlFor="adornment-password">Password</InputLabel>
                             <Input
                                 id="password"

@@ -13,7 +13,8 @@ defmodule Ontime.Application do
       # Start the endpoint when the application starts
       supervisor(OntimeWeb.Endpoint, []),
       # Start your own worker by calling: Ontime.Worker.start_link(arg1, arg2, arg3)
-      # worker(Ontime.Worker, [arg1, arg2, arg3]),
+      worker(Ontime.AviationAgent, []),
+      worker(Ontime.EmailService, []),
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
@@ -28,4 +29,5 @@ defmodule Ontime.Application do
     OntimeWeb.Endpoint.config_change(changed, removed)
     :ok
   end
+
 end

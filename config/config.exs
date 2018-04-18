@@ -9,6 +9,7 @@ use Mix.Config
 config :ontime,
   ecto_repos: [Ontime.Repo]
 
+
 # Configures the endpoint
 config :ontime, OntimeWeb.Endpoint,
   url: [host: "localhost"],
@@ -25,6 +26,9 @@ config :logger, :console,
 config :ontime, :aviationedge,
   api_key: System.get_env("AVIATIONEDGE_KEY")
 
+config :ontime, Ontime.Mailer,
+       adapter: Swoosh.Adapters.Sendgrid,
+       api_key: System.get_env("SENDGRID_API_KEY")
 
 
 # Import environment specific config. This must remain at the bottom

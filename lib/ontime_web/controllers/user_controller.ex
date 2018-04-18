@@ -1,6 +1,6 @@
 defmodule OntimeWeb.UserController do
   use OntimeWeb, :controller
-
+  use Phoenix.Controller
   alias Ontime.Accounts
   alias Ontime.Accounts.User
 
@@ -14,6 +14,9 @@ defmodule OntimeWeb.UserController do
 
   def create(conn, %{"user" => user_params}) do
     with {:ok, %User{} = user} <- Accounts.create_user(user_params) do
+
+      Ontime.EmailService.send_email({:register, user})
+
       conn
       |> put_status(:created)
       |> put_resp_header("location", user_path(conn, :show, user))
@@ -54,11 +57,9 @@ defmodule OntimeWeb.UserController do
         |> render(
              OntimeWeb.ErrorView,
              "unauthorized.json",
-             %{message: "Authentication failed. Invalid credentials or user doesnot exist"}
+             %{message: "Login failed. Invalid credentials."}
            )
     end
-
-
   end
 
 
