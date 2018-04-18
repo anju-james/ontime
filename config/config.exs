@@ -26,10 +26,14 @@ config :logger, :console,
 config :ontime, :aviationedge,
   api_key: System.get_env("AVIATIONEDGE_KEY")
 
+config :ontime, :nexmo,
+       NEXMO_API_KEY: System.get_env("NEXMO_API_KEY"),
+       NEXMO_API_SECRET: System.get_env("NEXMO_API_SECRET")
+
+
 config :ontime, Ontime.Mailer,
        adapter: Swoosh.Adapters.Sendgrid,
        api_key: System.get_env("SENDGRID_API_KEY")
-
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

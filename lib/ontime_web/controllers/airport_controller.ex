@@ -9,7 +9,13 @@ defmodule OntimeWeb.AirportController do
 
   def index(conn, _params) do
     airports = AviationAgent.get_airports()
-    render(conn, "index.json", airports: airports)
+    if Enum.count(airports) == 0 do
+      airpots_data = Aviation.list_airports_in_us()
+      airpots_data |> AviationAgent.put_airports
+      airpots_data |> (&render(conn, "index.json", airports: &1)).()
+    else
+      render(conn, "index.json", airports: airports)
+    end
   end
 
   def create(conn, %{"airport" => airport_params}) do

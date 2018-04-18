@@ -79,7 +79,6 @@ class RegisterView extends React.Component {
         let email = user.email;
         // reset form fields
         store.dispatch(update_register_form(empty_register_form));
-        console.log("post")
         $.ajax('/api/v1/users', {
             method: "POST",
             dataType: "json",
@@ -87,7 +86,14 @@ class RegisterView extends React.Component {
             data: jsonData,
             error: function (jqXHR, textStatus, errorThrown) {
                 let response = JSON.parse(jqXHR.responseText);
-                toast.error(response.data);
+                let messages = ['Sign up failed']
+                if (jqXHR.status == 422) {
+                    Object.keys(response.errors).forEach(key => messages.push(key +' '+ response.errors[''+key].join(",")));
+                    toast.error(messages.join('\n'));
+                } else {
+                    toast.error("We have encountered an unknown error. Please try again after sometime.");
+                }
+
             }, success: (resp) => {
                 toast.success("Account created. Please proceed to login using your new credentials. Check your email for details.");
                 this.handleClick();

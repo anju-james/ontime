@@ -10,8 +10,7 @@ defmodule Ontime.AviationAgent do
   Start agent as list of all airports.
   """
   def start_link do
-    airports = Aviation.list_airports_in_us()
-    Agent.start_link(fn -> %{:airports => airports} end, name: __MODULE__)
+    Agent.start_link(fn -> %{:airports => []} end, name: __MODULE__)
   end
 
   @doc """
@@ -19,5 +18,8 @@ defmodule Ontime.AviationAgent do
   """
   def get_airports(), do:
     Agent.get(__MODULE__, &Map.get(&1, :airports))
+
+  def put_airports(airports), do:
+    Agent.get(__MODULE__, &Map.put(&1, :airports, airports))
 
 end
