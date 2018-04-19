@@ -48,6 +48,7 @@ export class MenuBarView extends React.Component {
         this.openLogin = this.openLogin.bind(this);
         this.openRegister = this.openRegister.bind(this);
         this.signout = this.signout.bind(this);
+        this.subscriptions = this.subscriptions.bind(this);
         this.handleMenuClick = this.handleMenuClick.bind(this);
         this.handleMenuClose = this.handleMenuClose.bind(this);
     }
@@ -99,6 +100,12 @@ export class MenuBarView extends React.Component {
 
     }
 
+    subscriptions() {
+        this.handleMenuClose();
+        this.props.history.push("/subscriptions");
+        
+    }
+
     render() {
         let classes = this.props.classes;
         const { anchorEl } = this.state;
@@ -113,9 +120,9 @@ export class MenuBarView extends React.Component {
                             OnTime
                         </Typography>
                         <Hidden only={['sm', 'xs','md']}>
-                        {this.props.user && this.props.user.token ? <Button color="inherit" onClick={this.signout} >Sign out</Button>
+                        {this.props.user && this.props.user.token ? <Button color="inherit" onClick={this.subscriptions} >Subscriptions</Button>
                             : <Button color="inherit" onClick={this.openLogin}>Login</Button>}
-                        {this.props.user && this.props.user.token ? null
+                        {this.props.user && this.props.user.token ? <Button color="inherit" onClick={this.signout} >Sign out</Button>
                             : <Button color="inherit" onClick={this.openRegister}>Register</Button>}
                         </Hidden>
                         <Hidden only={['lg','xl']}>
@@ -132,9 +139,9 @@ export class MenuBarView extends React.Component {
                                 open={Boolean(anchorEl)}
                                 onClose={this.handleMenuClose}
                             >
-                                {this.props.user && this.props.user.token ? <MenuItem onClick={this.signout}>Sign out</MenuItem>
+                                {this.props.user && this.props.user.token ? <MenuItem onClick={this.subscriptions}>Subscriptions</MenuItem>
                                     : <MenuItem onClick={this.openLogin}>Login</MenuItem>}
-                                {this.props.user && this.props.user.token ? null
+                                {this.props.user && this.props.user.token ? <MenuItem onClick={this.signout}>Sign out</MenuItem>
                                     : <MenuItem onClick={this.openRegister}>Register</MenuItem>}
                             </Menu>
                         </Hidden>

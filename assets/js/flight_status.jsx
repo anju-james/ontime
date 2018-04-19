@@ -6,8 +6,8 @@ import {connect} from "react-redux";
 import List, {ListItem, ListItemIcon, ListItemText} from 'material-ui/List';
 import FlightTakeoff from '@material-ui/icons/FlightTakeoff';
 import FlightLand from '@material-ui/icons/FlightLand';
-import AddAlert from '@material-ui/icons/AddAlert';
-import Email from '@material-ui/icons/Email';
+import AddIcon from '@material-ui/icons/Add';
+import Delete from '@material-ui/icons/Delete'
 import Grid from 'material-ui/Grid';
 import MenuBar from './menu_bar';
 import moment from 'moment';
@@ -26,6 +26,7 @@ import {toast} from 'react-toastify';
 import Paper from 'material-ui/Paper';
 import store from './store';
 import {deleted_subscription, new_subscription} from './actions';
+import {Redirect} from 'react-router-dom';
 
 
 const theme = createMuiTheme({
@@ -53,6 +54,9 @@ const styles = {
     },
     buttonNew: {
         backgroundColor: blue[500],
+        '&:hover': {
+            backgroundColor: blue[500],
+        },
     },
     buttonSuccess: {
         backgroundColor: green[500],
@@ -75,7 +79,7 @@ const styles = {
 
 };
 
-class FlightStatusCard extends React.Component {
+export class FlightStatusCard extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -146,10 +150,12 @@ class FlightStatusCard extends React.Component {
     }
 
     addSubscription(flight_info) {
+
         let data = {
             token: this.props.current_user.token,
             subscription: {
                 flightid: flight_info.flightId, userid: this.props.current_user.id,
+                airline_name: this.props.airline_name_map[flight_info.carrierFsCode],
                 srcia_iata: flight_info.departureAirportFsCode, dest_iata: flight_info.arrivalAirportFsCode,
                 flight_data: flight_info, flight_time: flight_info.departureDate.dateUtc, expired: false
             }
@@ -267,7 +273,7 @@ class FlightStatusCard extends React.Component {
                                     className={existing_sub ? classes.buttonSuccess : classes.buttonNew}
                                     onClick={() => this.handleButtonClick(flight_info)}
                                 >
-                                    {existing_sub ? <Email/> : <AddAlert/>}
+                                    {existing_sub ? <Delete/> : <AddIcon/>}
                                 </Button>
                                 {this.state.loading ?
                                     <CircularProgress size={68} className={classes.fabProgress}/> : null}

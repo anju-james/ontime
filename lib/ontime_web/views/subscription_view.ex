@@ -18,6 +18,8 @@ defmodule OntimeWeb.SubscriptionView do
       dest_iata: subscription.dest_iata,
       flight_data: subscription.flight_data,
       flight_time: subscription.flight_time,
-      expired: subscription.expired}
+      expired: subscription.expired,
+      airline_name: subscription.airline_name
+    }
   end
 end
