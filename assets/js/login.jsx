@@ -9,7 +9,7 @@ import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import {connect} from 'react-redux';
 import store, {empty_login_form} from './store';
-import {current_user, update_login_form} from "./actions";
+import {current_user, update_login_form, fetched_subscriptions} from "./actions";
 import { ToastContainer, toast } from 'react-toastify';
 
 import Dialog, {
@@ -109,6 +109,11 @@ class LoginView extends React.Component {
                 store.dispatch(update_login_form(empty_login_form));
                 toast.success('✈️ Welcome Back!');
                 closeDialog();
+
+                $.get('/api/v1/subscriptions', (response) => {
+                    let subscriptions = response.data;
+                    store.dispatch(fetched_subscriptions(subscriptions));
+                });
             }
         });
     }

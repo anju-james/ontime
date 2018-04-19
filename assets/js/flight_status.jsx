@@ -21,9 +21,11 @@ import Stepper, {Step, StepButton, StepLabel} from 'material-ui/Stepper';
 import Typography from 'material-ui/Typography'
 import Hidden from 'material-ui/Hidden'
 import withWidth from 'material-ui/utils/withWidth'
-import { LinearProgress,CircularProgress} from 'material-ui/Progress';
-import { toast } from 'react-toastify';
+import {LinearProgress, CircularProgress} from 'material-ui/Progress';
+import {toast} from 'react-toastify';
 import Paper from 'material-ui/Paper';
+import store from './store';
+import {deleted_subscription, new_subscription} from './actions';
 
 
 const theme = createMuiTheme({
@@ -51,14 +53,11 @@ const styles = {
     },
     buttonNew: {
         backgroundColor: blue[500],
-        '&:hover': {
-            backgroundColor: green[500],
-        },
     },
     buttonSuccess: {
         backgroundColor: green[500],
         '&:hover': {
-            backgroundColor: blue[500],
+            backgroundColor: green[500],
         },
     },
     fabProgress: {
@@ -81,8 +80,8 @@ class FlightStatusCard extends React.Component {
         super(props);
         this.state = {
             loading: false,
-            success: false,
         };
+
 
     }
 
@@ -123,32 +122,87 @@ class FlightStatusCard extends React.Component {
 
     }
 
-    handleButtonClick = () => {
+    removeSubscription(subscription) {
+        $.ajax('/api/v1/subscriptions/' + subscription.id, {
+            method: "DELETE",
+            contentType: "application/json; charset=UTF-8",
+            error: function (jqXHR, textStatus, errorThrown) {
+                let response = JSON.parse(jqXHR.responseText);
+                let messages = ['Failed to remove alert']
+                if (jqXHR.status == 422) {
+                    Object.keys(response.errors).forEach(key => messages.push(key + ' ' + response.errors['' + key].join(",")));
+                    toast.error(messages.join('\n'));
+                } else {
+                    toast.error("We have encountered an unknown error. Please try again after sometime.");
+                }
+                this.setState({loading: false});
+
+            }, success: (resp) => {
+                toast.success("Alert removed.");
+                store.dispatch(deleted_subscription(subscription));
+                this.setState({loading: false});
+            }
+        });
+    }
+
+    addSubscription(flight_info) {
+        let data = {
+            subscription: {
+                flightid: flight_info.flightId, userid: this.props.current_user.id,
+                srcia_iata: flight_info.departureAirportFsCode, dest_iata: flight_info.arrivalAirportFsCode,
+                flight_data: flight_info, flight_time: flight_info.departureDate.dateUtc, expired: false
+            }
+        }
+        $.ajax('/api/v1/subscriptions', {
+            method: "POST",
+            dataType: "json",
+            contentType: "application/json; charset=UTF-8",
+            data: JSON.stringify(data),
+            error: function (jqXHR, textStatus, errorThrown) {
+                let response = JSON.parse(jqXHR.responseText);
+                let messages = ['Failed to add new alert']
+                if (jqXHR.status == 422) {
+                    Object.keys(response.errors).forEach(key => messages.push(key + ' ' + response.errors['' + key].join(",")));
+                    toast.error(messages.join('\n'));
+                } else {
+                    toast.error("We have encountered an unknown error. Please try again after sometime.");
+                }
+                this.setState({loading: false});
+
+            }, success: (resp) => {
+                toast.success("Subscribed to alerts for flight " + flight_info.carrierFsCode + flight_info.flightNumber + ".");
+                store.dispatch(new_subscription(resp.data));
+                this.setState({loading: false});
+            }
+        });
+    }
+
+    handleButtonClick(flight_info) {
         if (!this.props.current_user || !this.props.current_user.token) {
             toast.warn('You need to login before setting up alerts');
             return;
         }
+
         if (!this.state.loading) {
-            this.setState(
-                {
-                    success: false,
-                    loading: true,
-                },
-                () => {
-                    this.timer = setTimeout(() => {
-                        this.setState({
-                            loading: false,
-                            success: true,
-                        });
-                    }, 2000);
-                },
-            );
+            this.setState({loading: true});
+            let existing_sub = (flight_info.flightId in this.props.flightid_subscription_map);
+            if (existing_sub) {
+                this.removeSubscription(this.props.flightid_subscription_map[flight_info.flightId]);
+            } else if (flight_info.status == "L") {
+                toast.warn("Landed flights not eligible for alerts.");
+                this.setState({loading: false});
+            } else {
+                // subscribe
+                this.addSubscription(flight_info);
+            }
         }
+
     };
 
     render() {
         const {classes} = this.props;
         const flight_info = this.props.flight_info;
+        let existing_sub = (flight_info.flightId in this.props.flightid_subscription_map);
 
         return (
             <MuiThemeProvider theme={theme}>
@@ -176,10 +230,13 @@ class FlightStatusCard extends React.Component {
                                 <ListItemText
                                     primary={moment(flight_info.departureDate.dateLocal).format('MM/DD/YYYY h:mm a')}/>
                                 <Tooltip id="tooltip-origin-terminal" title="Boarding Terminal">
-                                    <ListItemText primary={flight_info.airportResources.departureTerminal}/>
+                                    <ListItemText
+                                        primary={flight_info.airportResources.departureTerminal ? flight_info.airportResources.departureTerminal : ""}/>
                                 </Tooltip>
                                 <Tooltip id="tooltip-origin-gate" title="Boarding Gate">
-                                    <ListItemText primary={flight_info.airportResources.departureGate} color="primary"/>
+                                    <ListItemText
+                                        primary={flight_info.airportResources.departureGate ? flight_info.airportResources.departureGate : ""}
+                                        color="primary"/>
                                 </Tooltip>
                             </ListItem>
 
@@ -191,10 +248,12 @@ class FlightStatusCard extends React.Component {
                                 <ListItemText
                                     primary={moment(flight_info.arrivalDate.dateLocal).format('MM/DD/YYYY h:mm a')}/>
                                 <Tooltip id="tooltip-arrival-terminal" title="Arrival Terminal">
-                                    <ListItemText primary={flight_info.airportResources.arrivalTerminal}/>
+                                    <ListItemText
+                                        primary={flight_info.airportResources.arrivalTerminal ? flight_info.airportResources.arrivalTerminal : ""}/>
                                 </Tooltip>
                                 <Tooltip id="tooltip-arrival-gate" title="Arrival Gate">
-                                    <ListItemText primary={flight_info.airportResources.arrivalGate}/>
+                                    <ListItemText
+                                        primary={flight_info.airportResources.arrivalGate ? flight_info.airportResources.arrivalGate : ""}/>
                                 </Tooltip>
                             </ListItem>
                             {this.renderStepper(flight_info.status)}
@@ -204,12 +263,13 @@ class FlightStatusCard extends React.Component {
                                 <Button
                                     variant="fab"
                                     color="primary"
-                                    className={this.state.success ? classes.buttonSuccess : classes.buttonNew}
-                                    onClick={this.handleButtonClick}
+                                    className={existing_sub ? classes.buttonSuccess : classes.buttonNew}
+                                    onClick={() => this.handleButtonClick(flight_info)}
                                 >
-                                    {this.state.success ? <Email /> : <AddAlert />}
+                                    {existing_sub ? <Email/> : <AddAlert/>}
                                 </Button>
-                                {this.state.loading && <CircularProgress size={68} className={classes.fabProgress} />}
+                                {this.state.loading ?
+                                    <CircularProgress size={68} className={classes.fabProgress}/> : null}
                             </div>
                         </CardActions>
                     </Card>
@@ -257,7 +317,7 @@ class FlightStatusView extends React.Component {
     render() {
         const {classes} = this.props;
         if (!this.props.match.params.id &&
-             (!this.props.match.params.src && !this.props.match.params.dest && !this.props.match.params.traveldate)) {
+            (!this.props.match.params.src && !this.props.match.params.dest && !this.props.match.params.traveldate)) {
             return (<Redirect to='/'/>);
         }
         let flightdata = this.state.flightinfo;
@@ -266,12 +326,17 @@ class FlightStatusView extends React.Component {
             flightdata.appendix.airlines.forEach(airline => airline_name_map[airline.fs] = airline.name);
             flightdata.flightStatuses = flightdata.flightStatuses.filter((status) => status.airportResources);
         }
+        let flightid_subscription_map = {}
+        if (this.props.subscriptions) {
+            this.props.subscriptions.forEach(s => flightid_subscription_map['' + s.flightid] = s);
+        }
+
 
         return (
             <MuiThemeProvider theme={theme}>
                 <MenuBar history={this.props.history}/>
                 {this.state.loading ?
-                    <Grid><Grid item xs={12}><LinearProgress color="secondary" /></Grid></Grid>:
+                    <Grid><Grid item xs={12}><LinearProgress color="secondary"/></Grid></Grid> :
                     <Grid
                         container
                         spacing={24}
@@ -280,7 +345,7 @@ class FlightStatusView extends React.Component {
                         justify='center'>
                         <Grid key={-1} item xs={12}>
                             <Paper className={classes.root} elevation={4}>
-                                <Typography variant="headline" component="h3">
+                                <Typography variant="headline" color="primary" component="h3">
                                     {flightdata.appendix.airports[0].name + ', '
                                     + flightdata.appendix.airports[0].city + ' -- '
                                     + flightdata.appendix.airports[1].name + ', '
@@ -288,7 +353,7 @@ class FlightStatusView extends React.Component {
                                     }
                                 </Typography>
                                 <Typography variant="subheading">
-                                    {flightdata.flightStatuses.length +' Matching Search Results.'}
+                                    {flightdata.flightStatuses.length + ' Matching Search Results.'}
                                 </Typography>
                             </Paper>
 
@@ -299,6 +364,7 @@ class FlightStatusView extends React.Component {
                                                   flight_info={flight_status}
                                                   airports={this.props.airports}
                                                   airline_name_map={airline_name_map}
+                                                  flightid_subscription_map={flightid_subscription_map}
                                                   classes={classes} current_user={this.props.current_user}/></Grid>)
 
                         }
@@ -310,7 +376,7 @@ class FlightStatusView extends React.Component {
 }
 
 const mapStateToProps = state => {
-    return {airports: state.airports,current_user: state.current_user}
+    return {airports: state.airports, current_user: state.current_user, subscriptions: state.subscriptions}
 };
 
 const FlightStatus = connect(mapStateToProps)(FlightStatusView)

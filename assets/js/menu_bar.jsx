@@ -12,7 +12,7 @@ import Login from './login';
 import Register from './register';
 import {connect} from 'react-redux';
 import store from "./store";
-import {signout_user} from "./actions";
+import {signout_user, fetched_subscriptions} from "./actions";
 import { ToastContainer, toast, Flip } from 'react-toastify';
 import Hidden from 'material-ui/Hidden'
 import Menu, { MenuItem } from 'material-ui/Menu';
@@ -95,6 +95,7 @@ export class MenuBarView extends React.Component {
         this.handleMenuClose();
         toast.info('You have Signed Out!');
         store.dispatch(signout_user());
+        store.dispatch(fetched_subscriptions([]));
 
     }
 

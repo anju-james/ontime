@@ -23,19 +23,12 @@ defmodule OntimeWeb.Router do
   scope "/api/v1", OntimeWeb do
      pipe_through :api
      resources "/flightstat", FlightStatController
-     resources "/airports", AirportController, except: [:new, :edit]
-     resources "/airlines", AirlineController, except: [:new, :edit]
-     resources "/routes", RouteController, except: [:new, :edit]
-     resources "/users", UserController, except: [:new, :edit]
+     resources "/airports", AirportController, except: [:new, :edit, :show, :update]
+     resources "/airlines", AirlineController, except: [:new, :edit, :show, :update]
+     resources "/routes", RouteController, except: [:new, :edit, :show, :update]
+     resources "/users", UserController, except: [:new, :edit, :show, :update]
+     resources "/subscriptions", SubscriptionController, except: [:new, :edit, :update]
      get "/flightstatus", FlightStatController, :get_status
-  end
-
-
-  scope "/auth", OntimeWeb do
-    pipe_through :browser
-
-    get "/:provider", AuthController, :request
-    get "/:provider/callback", AuthController, :callback
   end
 
 end
