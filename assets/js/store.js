@@ -46,6 +46,7 @@ export let empty_adv_search_form = {
     origin: "",
     destination: "",
     traveldate: "",
+    flightnumber: ""
 };
 
 

@@ -17,7 +17,7 @@ class OntimeSpa extends React.Component {
             <HashRouter>
                 <Switch>
                     <Route exact path='/' component={OnTimeHomePage}/>
-                    <Route exact path='/flightinfobyid/:id' component={FlightStatus}/>
+                    <Route exact path='/flightinfobylocfiltered/:src/:dest/:traveldate/:flightno' component={FlightStatus}/>
                     <Route path='/flightinfobyloc/:src/:dest/:traveldate' component={FlightStatus}/>
                     <Route exact path='/subscriptions' component={Subscriptions}/>
                     <Redirect from="*" to="/"/>

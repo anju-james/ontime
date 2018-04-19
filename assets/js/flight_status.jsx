@@ -328,10 +328,19 @@ class FlightStatusView extends React.Component {
             return (<Redirect to='/'/>);
         }
         let flightdata = this.state.flightinfo;
+        let flightnoFilterFailed = false;
+        let filterFlightno = this.props.match.params.flightno;
+        let flightnoFilterIncluded = (filterFlightno && filterFlightno.trim().length > 0 ? true : false);
         let airline_name_map = {};
         if (flightdata) {
             flightdata.appendix.airlines.forEach(airline => airline_name_map[airline.fs] = airline.name);
             flightdata.flightStatuses = flightdata.flightStatuses.filter((status) => status.airportResources);
+            if(flightnoFilterIncluded) {
+                filterFlightno = filterFlightno.split(' ').join('').toUpperCase();
+                let matchingFlights = flightdata.flightStatuses.filter(s => (s.carrierFsCode + s.flightNumber) == filterFlightno);
+                flightnoFilterFailed = matchingFlights.length <= 0;
+                flightdata.flightStatuses = (matchingFlights.length > 0) ? matchingFlights : flightdata.flightStatuses;
+            }
         }
         let flightid_subscription_map = {}
         if (this.props.subscriptions) {
@@ -361,6 +370,9 @@ class FlightStatusView extends React.Component {
                                 </Typography>
                                 <Typography variant="subheading">
                                     {flightdata.flightStatuses.length + ' Matching Search Results.'}
+                                </Typography>
+                                <Typography variant="subheading" color="secondary">
+                                    {flightnoFilterFailed && flightnoFilterIncluded ? "We couldn't find a flight with the matching flight number. Here are some alternative flights available on the same date." : ""}
                                 </Typography>
                             </Paper>
 
