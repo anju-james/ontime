@@ -26,6 +26,9 @@ config :logger, :console,
 config :ontime, :aviationedge,
   api_key: System.get_env("AVIATIONEDGE_KEY")
 
+config :ontime, :flightsearch,
+  usemockdata: true
+
 config :ontime, :flightstats,
    app_id: System.get_env("FLIGHTSTATS_APP_ID"),
    app_key: System.get_env("FLIGHTSTATS_APP_KEY")

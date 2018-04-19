@@ -5,7 +5,7 @@ defmodule Ontime.FlightSearch do
 
 
   def get_flightdata(src, dest, traveldate)do
-    if true do
+    if use_mock_data() do
       get_test_data(@flight_stats)
     else
       get_live_data(@flight_stats, src, dest, traveldate)
@@ -15,7 +15,7 @@ defmodule Ontime.FlightSearch do
 
 
   def get_flightdata(flight_id) do
-    if true do
+    if use_mock_data() do
       get_test_flightdata(@flight_stats) |> Poison.decode!
     else
       get_live_flightdata(@flight_stats, flight_id)
@@ -56,6 +56,8 @@ defmodule Ontime.FlightSearch do
     Poison.decode!(resp.body)
   end
 
+
+  defp use_mock_data, do: Application.get_env(:ontime, :flightsearch)[:usemockdata]
 
   defp get_flightstat_app_id, do: Application.get_env(:ontime, :flightstats)[:app_id]
 

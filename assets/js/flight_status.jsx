@@ -365,6 +365,8 @@ class FlightStatusView extends React.Component {
         let filterFlightno = this.props.match.params.flightno;
         let flightnoFilterIncluded = (filterFlightno && filterFlightno.trim().length > 0 ? true : false);
         let airline_name_map = {};
+        let matching_dest_airport;
+        let matching_src_airport;
         if (flightdata) {
             flightdata.appendix.airlines.forEach(airline => airline_name_map[airline.fs] = airline.name);
             flightdata.flightStatuses = flightdata.flightStatuses.filter((status) => status.airportResources);
@@ -374,6 +376,8 @@ class FlightStatusView extends React.Component {
                 flightnoFilterFailed = matchingFlights.length <= 0;
                 flightdata.flightStatuses = (matchingFlights.length > 0) ? matchingFlights : flightdata.flightStatuses;
             }
+            matching_src_airport = flightdata.appendix.airports.filter(a => a.iata == this.props.match.params.src)[0];
+            matching_dest_airport = flightdata.appendix.airports.filter(a => a.iata == this.props.match.params.dest)[0];
         }
         let flightid_subscription_map = {}
         if (this.props.subscriptions) {
@@ -395,10 +399,11 @@ class FlightStatusView extends React.Component {
                         <Grid key={-1} item xs={12}>
                             <Paper className={classes.root} elevation={4}>
                                 <Typography variant="headline" color="primary" component="h3">
-                                    {flightdata.appendix.airports[0].name + ', '
-                                    + flightdata.appendix.airports[0].city + ' -- '
-                                    + flightdata.appendix.airports[1].name + ', '
-                                    + flightdata.appendix.airports[1].city
+                                    {matching_dest_airport && matching_src_airport ? matching_src_airport.name + ', '
+                                    + matching_src_airport.city + ' -- '
+                                    + matching_dest_airport.name + ', '
+                                    + matching_dest_airport.city
+                                        : this.props.match.params.src + " -- " + this.props.match.params.dest
                                     }
                                 </Typography>
                                 <Typography variant="subheading">
