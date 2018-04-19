@@ -6,9 +6,19 @@ defmodule OntimeWeb.SubscriptionController do
 
   action_fallback OntimeWeb.FallbackController
 
-  def index(conn, _params) do
-    subscriptions = Tracking.list_subscriptions()
-    render(conn, "index.json", subscriptions: subscriptions)
+  def index(conn, %{"token" => token}) do
+    case Phoenix.Token.verify(conn, "auth token", token, max_age: 86400) do
+      {:ok, user_id} ->
+        subscriptions = Tracking.list_active_subscription(user_id)
+        render(conn, "index.json", subscriptions: subscriptions)
+      _ -> conn
+           |> put_status(:unauthorized)
+           |> render(
+                OntimeWeb.ErrorView,
+                "unauthorized.json",
+                %{message: "Not authorized to perform the given action."}
+              )
+    end
   end
 
   def create(conn, %{"subscription" => subscription_params, "token" => token}) do

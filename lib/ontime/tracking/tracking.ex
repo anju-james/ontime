@@ -21,6 +21,10 @@ defmodule Ontime.Tracking do
     Repo.all(Subscription)
   end
 
+  def list_active_subscription(user_id) do
+    Repo.all(from s in Subscription, where: s.expired == false and s.userid == ^user_id)
+  end
+
   @doc """
   Gets a single subscription.
 
