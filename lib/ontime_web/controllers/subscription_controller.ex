@@ -2,6 +2,7 @@ defmodule OntimeWeb.SubscriptionController do
   use OntimeWeb, :controller
 
   alias Ontime.Tracking
+  alias Ontime.Accounts
   alias Ontime.Tracking.Subscription
 
   action_fallback OntimeWeb.FallbackController
@@ -26,6 +27,12 @@ defmodule OntimeWeb.SubscriptionController do
       {:ok, user_id} ->
         if user_id == subscription_params["userid"] do
           with {:ok, %Subscription{} = subscription} <- Tracking.create_subscription(subscription_params) do
+
+            # fetch user data and send notification
+            user = Accounts.get_user!(user_id)
+            Ontime.MessageService.send_message({:subscribe,:email, [user, subscription]})
+            Ontime.MessageService.send_message({:subscribe,:sms, [user, subscription]})
+
             conn
             |> put_status(:created)
             |> put_resp_header("location", subscription_path(conn, :show, subscription))

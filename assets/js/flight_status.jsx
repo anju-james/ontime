@@ -112,7 +112,7 @@ export class FlightStatusCard extends React.Component {
                 </StepButton></Step></Stepper></Hidden>);
         } else {
             const labelProps = {};
-            let statusCaps = status.charAt(0).toUpperCase() + status.slice(1);
+            let statusCaps = this.mapStatus(status);
             labelProps.optional = (
                 <Typography variant="caption" color="error">
                     {statusCaps}
@@ -124,6 +124,39 @@ export class FlightStatusCard extends React.Component {
                 <Step key="E"><StepLabel {...labelProps}>Alert</StepLabel></Step></Stepper></Hidden>);
         }
 
+    }
+
+    mapStatus(status) {
+        let statusCaps = "Unknown";
+        switch(status) {
+            case "C":
+                statusCaps = "Canceled";
+                break;
+            case "D":
+                statusCaps = "Diverted";
+                break;
+            case "DN":
+                statusCaps ="Data source needed";
+                break;
+            case "L":
+                statusCaps ="Landed";
+                break;
+            case "NO":
+                statusCaps ="Not Operational";
+                break;
+            case "R":
+                statusCaps ="Redirected";
+                break;
+            case "S":
+                statusCaps ="Scheduled";
+                break;
+            case "A":
+                statusCaps = "En-route";
+                break;
+            default:
+                statusCaps = "Unknown";
+        }
+        return statusCaps.charAt(0).toUpperCase() + statusCaps.slice(1);
     }
 
     removeSubscription(subscription) {

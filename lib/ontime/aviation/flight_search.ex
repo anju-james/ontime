@@ -12,6 +12,25 @@ defmodule Ontime.FlightSearch do
     end
   end
 
+
+
+  def get_flightdata(flight_id) do
+    if true do
+      get_test_flightdata(@flight_stats) |> Poison.decode!
+    else
+      get_live_flightdata(@flight_stats, flight_id)
+    end
+  end
+
+  def get_live_flightdata(@flight_stats, flight_id) do
+    url = "https://api.flightstats.com/flex/flightstatus/rest/v2/json/flight/status/#{flight_id}?appId=#{
+      get_flightstat_app_id()
+    }&appKey=#{get_flightstat_app_key()}"
+    resp = HTTPoison.get!(url)
+    Poison.decode!(resp.body)
+  end
+
+
   defp get_live_data(@aviation_edge, src) do
     url = "http://aviation-edge.com/api/public/timetable?key=#{get_aviationedge_api_key}&iataCode=#{
       src
@@ -38,16 +57,16 @@ defmodule Ontime.FlightSearch do
   end
 
 
-  defp get_airport_waitimes(src) do
-    url = "https://www.ifly.com/api/v1/airport/#{src}/wait-times?date=2017-04-16&hr=08:00&rn=1523891031"
-  end
-
   defp get_flightstat_app_id, do: Application.get_env(:ontime, :flightstats)[:app_id]
 
   defp get_flightstat_app_key, do: Application.get_env(:ontime, :flightstats)[:app_key]
 
   defp get_aviationedge_api_key, do: Application.get_env(:ontime, :aviationedge)[:api_key]
 
+  defp get_test_flightdata(@flight_stats) do
+    "{\"request\":{\"flightId\":{\"requested\":\"956571579\",\"interpreted\":956571579},\"extendedOptions\":{},\"url\":\"https://api.flightstats.com/flex/flightstatus/rest/v2/json/flight/status/956571579\"},\"appendix\":{\"airlines\":[{\"fs\":\"B6\",\"iata\":\"B6\",\"icao\":\"JBU\",\"name\":\"JetBlue Airways\",\"phoneNumber\":\"1-800-538-2583\",\"active\":true}],\"airports\":[{\"fs\":\"BOS\",\"iata\":\"BOS\",\"icao\":\"KBOS\",\"faa\":\"BOS\",\"name\":\"Logan International Airport\",\"street1\":\"One Harborside Drive\",\"street2\":\"\",\"city\":\"Boston\",\"cityCode\":\"BOS\",\"stateCode\":\"MA\",\"postalCode\":\"02128-2909\",\"countryCode\":\"US\",\"countryName\":\"United States\",\"regionName\":\"North America\",\"timeZoneRegionName\":\"America/New_York\",\"weatherZone\":\"MAZ015\",\"localTime\":\"2018-04-19T12:18:22.040\",\"utcOffsetHours\":-4,\"latitude\":42.36646,\"longitude\":-71.020176,\"elevationFeet\":19,\"classification\":1,\"active\":true,\"delayIndexUrl\":\"https://api.flightstats.com/flex/delayindex/rest/v1/json/airports/BOS?codeType=fs\",\"weatherUrl\":\"https://api.flightstats.com/flex/weather/rest/v1/json/all/BOS?codeType=fs\"},{\"fs\":\"JFK\",\"iata\":\"JFK\",\"icao\":\"KJFK\",\"faa\":\"JFK\",\"name\":\"John F. Kennedy International Airport\",\"street1\":\"JFK Airport\",\"city\":\"New York\",\"cityCode\":\"NYC\",\"stateCode\":\"NY\",\"postalCode\":\"11430\",\"countryCode\":\"US\",\"countryName\":\"United States\",\"regionName\":\"North America\",\"timeZoneRegionName\":\"America/New_York\",\"weatherZone\":\"NYZ178\",\"localTime\":\"2018-04-19T12:18:22.040\",\"utcOffsetHours\":-4,\"latitude\":40.642335,\"longitude\":-73.78817,\"elevationFeet\":13,\"classification\":1,\"active\":true,\"delayIndexUrl\":\"https://api.flightstats.com/flex/delayindex/rest/v1/json/airports/JFK?codeType=fs\",\"weatherUrl\":\"https://api.flightstats.com/flex/weather/rest/v1/json/all/JFK?codeType=fs\"}],\"equipments\":[{\"iata\":\"321\",\"name\":\"Airbus A321\",\"turboProp\":false,\"jet\":true,\"widebody\":false,\"regional\":false}]},\"flightStatus\":{\"flightId\":956571579,\"carrierFsCode\":\"B6\",\"flightNumber\":\"6101\",\"departureAirportFsCode\":\"BOS\",\"arrivalAirportFsCode\":\"JFK\",\"departureDate\":{\"dateLocal\":\"2018-04-18T18:40:00.000\",\"dateUtc\":\"2018-04-18T22:40:00.000Z\"},\"arrivalDate\":{\"dateLocal\":\"2018-04-18T19:40:00.000\",\"dateUtc\":\"2018-04-18T23:40:00.000Z\"},\"status\":\"L\",\"operationalTimes\":{\"scheduledGateDeparture\":{\"dateLocal\":\"2018-04-18T18:40:00.000\",\"dateUtc\":\"2018-04-18T22:40:00.000Z\"},\"estimatedGateDeparture\":{\"dateLocal\":\"2018-04-18T19:06:00.000\",\"dateUtc\":\"2018-04-18T23:06:00.000Z\"},\"actualGateDeparture\":{\"dateLocal\":\"2018-04-18T19:06:00.000\",\"dateUtc\":\"2018-04-18T23:06:00.000Z\"},\"flightPlanPlannedDeparture\":{\"dateLocal\":\"2018-04-18T18:50:00.000\",\"dateUtc\":\"2018-04-18T22:50:00.000Z\"},\"estimatedRunwayDeparture\":{\"dateLocal\":\"2018-04-18T19:26:00.000\",\"dateUtc\":\"2018-04-18T23:26:00.000Z\"},\"actualRunwayDeparture\":{\"dateLocal\":\"2018-04-18T19:26:00.000\",\"dateUtc\":\"2018-04-18T23:26:00.000Z\"},\"scheduledGateArrival\":{\"dateLocal\":\"2018-04-18T19:40:00.000\",\"dateUtc\":\"2018-04-18T23:40:00.000Z\"},\"estimatedGateArrival\":{\"dateLocal\":\"2018-04-18T20:21:00.000\",\"dateUtc\":\"2018-04-19T00:21:00.000Z\"},\"actualGateArrival\":{\"dateLocal\":\"2018-04-18T20:21:00.000\",\"dateUtc\":\"2018-04-19T00:21:00.000Z\"},\"flightPlanPlannedArrival\":{\"dateLocal\":\"2018-04-18T19:33:00.000\",\"dateUtc\":\"2018-04-18T23:33:00.000Z\"},\"estimatedRunwayArrival\":{\"dateLocal\":\"2018-04-18T20:18:00.000\",\"dateUtc\":\"2018-04-19T00:18:00.000Z\"},\"actualRunwayArrival\":{\"dateLocal\":\"2018-04-18T20:18:00.000\",\"dateUtc\":\"2018-04-19T00:18:00.000Z\"}},\"delays\":{\"departureGateDelayMinutes\":26,\"departureRunwayDelayMinutes\":36,\"arrivalGateDelayMinutes\":41,\"arrivalRunwayDelayMinutes\":45},\"flightDurations\":{\"scheduledBlockMinutes\":60,\"blockMinutes\":75,\"scheduledAirMinutes\":43,\"airMinutes\":52,\"scheduledTaxiOutMinutes\":10,\"taxiOutMinutes\":20,\"scheduledTaxiInMinutes\":7,\"taxiInMinutes\":3},\"airportResources\":{\"departureTerminal\":\"C\",\"departureGate\":\"C32\",\"arrivalTerminal\":\"5\",\"arrivalGate\":\"7\"},\"flightEquipment\":{\"actualEquipmentIataCode\":\"321\",\"tailNumber\":\"N569JB\"}}}
+"
+  end
 
   def get_test_data(@aviation_edge) do
     [

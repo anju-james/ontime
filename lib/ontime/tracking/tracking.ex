@@ -25,6 +25,9 @@ defmodule Ontime.Tracking do
     Repo.all(from s in Subscription, where: s.expired == false and s.userid == ^user_id)
   end
 
+  def list_all_active_subscriptions(),
+      do: Repo.all(from s in Subscription, where: s.expired == false)
+
   @doc """
   Gets a single subscription.
 
@@ -104,5 +107,20 @@ defmodule Ontime.Tracking do
   """
   def change_subscription(%Subscription{} = subscription) do
     Subscription.changeset(subscription, %{})
+  end
+
+  def map_flight_status(status) do
+    case status do
+      "A" -> "En-route"
+      "C" -> "Canceled"
+      "D" -> "Diverted"
+      "DN" -> "Data source needed"
+      "L" -> "Landed"
+      "NO" -> "Not Operational"
+      "R" -> "Redirected"
+      "S" -> "Scheduled"
+      "U" -> "Unknown"
+      _ -> "Unknown"
+    end
   end
 end
