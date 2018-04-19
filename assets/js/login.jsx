@@ -110,7 +110,7 @@ class LoginView extends React.Component {
                 toast.success('✈️ Welcome Back!');
                 closeDialog();
 
-                $.get('/api/v1/subscriptions', (response) => {
+                $.get('/api/v1/subscriptions?token='+resp.data.token, (response) => {
                     let subscriptions = response.data;
                     store.dispatch(fetched_subscriptions(subscriptions));
                 });

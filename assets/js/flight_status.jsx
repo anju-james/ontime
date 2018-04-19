@@ -123,7 +123,7 @@ class FlightStatusCard extends React.Component {
     }
 
     removeSubscription(subscription) {
-        $.ajax('/api/v1/subscriptions/' + subscription.id, {
+        $.ajax('/api/v1/subscriptions/' + subscription.id+"?token="+this.props.current_user.token, {
             method: "DELETE",
             contentType: "application/json; charset=UTF-8",
             error: function (jqXHR, textStatus, errorThrown) {
@@ -147,12 +147,13 @@ class FlightStatusCard extends React.Component {
 
     addSubscription(flight_info) {
         let data = {
+            token: this.props.current_user.token,
             subscription: {
                 flightid: flight_info.flightId, userid: this.props.current_user.id,
                 srcia_iata: flight_info.departureAirportFsCode, dest_iata: flight_info.arrivalAirportFsCode,
                 flight_data: flight_info, flight_time: flight_info.departureDate.dateUtc, expired: false
             }
-        }
+        };
         $.ajax('/api/v1/subscriptions', {
             method: "POST",
             dataType: "json",
