@@ -15,6 +15,7 @@ defmodule Ontime.Application do
       # Start your own worker by calling: Ontime.Worker.start_link(arg1, arg2, arg3)
       worker(Ontime.AviationAgent, []),
       worker(Ontime.MessageService, []),
+      worker(Ontime.PeriodicNotifier, [])
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

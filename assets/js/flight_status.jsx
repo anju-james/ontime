@@ -6,8 +6,8 @@ import {connect} from "react-redux";
 import List, {ListItem, ListItemIcon, ListItemText} from 'material-ui/List';
 import FlightTakeoff from '@material-ui/icons/FlightTakeoff';
 import FlightLand from '@material-ui/icons/FlightLand';
-import AddAlert from '@material-ui/icons/AddAlert';
-import Email from '@material-ui/icons/Email';
+import AddIcon from '@material-ui/icons/Add';
+import Delete from '@material-ui/icons/Delete'
 import Grid from 'material-ui/Grid';
 import MenuBar from './menu_bar';
 import moment from 'moment';
@@ -21,8 +21,13 @@ import Stepper, {Step, StepButton, StepLabel} from 'material-ui/Stepper';
 import Typography from 'material-ui/Typography'
 import Hidden from 'material-ui/Hidden'
 import withWidth from 'material-ui/utils/withWidth'
-import { LinearProgress,CircularProgress} from 'material-ui/Progress';
-import { toast } from 'react-toastify';
+import {LinearProgress, CircularProgress} from 'material-ui/Progress';
+import {toast} from 'react-toastify';
+import Paper from 'material-ui/Paper';
+import store from './store';
+import {deleted_subscription, new_subscription} from './actions';
+import {Redirect} from 'react-router-dom';
+
 
 const theme = createMuiTheme({
     palette: {
@@ -50,13 +55,13 @@ const styles = {
     buttonNew: {
         backgroundColor: blue[500],
         '&:hover': {
-            backgroundColor: green[500],
+            backgroundColor: blue[500],
         },
     },
     buttonSuccess: {
         backgroundColor: green[500],
         '&:hover': {
-            backgroundColor: blue[500],
+            backgroundColor: green[500],
         },
     },
     fabProgress: {
@@ -66,34 +71,39 @@ const styles = {
         left: -6,
         zIndex: 1,
     },
+    root: theme.mixins.gutters({
+        paddingTop: 16,
+        paddingBottom: 16,
+        marginTop: theme.spacing.unit * 3,
+    }),
 
 };
 
-class FlightStatusCard extends React.Component {
+export class FlightStatusCard extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             loading: false,
-            success: false,
         };
+
 
     }
 
     renderStepper(status) {
-        if (status == 'scheduled') {
+        if (status == 'S') {
             return (<Hidden smDown><Stepper><Step key="S"><StepButton completed={true}>Scheduled
             </StepButton></Step><Step key="E"><StepButton completed={false}>En-route
             </StepButton></Step>
                 <Step key="L"><StepButton completed={false}>Landed
                 </StepButton></Step></Stepper></Hidden>);
-        } else if (status == 'active') {
+        } else if (status == 'A') {
             return (<Hidden smDown><Stepper><Step key="S"><StepButton completed={true}>Scheduled
             </StepButton></Step>
                 <Step key="E"><StepButton completed={true}>En-route
                 </StepButton></Step><Step key="L"><StepButton completed={false}>Landed
                 </StepButton></Step></Stepper></Hidden>);
 
-        } else if (status == 'landed') {
+        } else if (status == 'L') {
             return (<Hidden smDown><Stepper><Step key="S"><StepButton completed={true}>Scheduled
             </StepButton></Step>
                 <Step key="E"><StepButton completed={true}>En-route
@@ -102,7 +112,7 @@ class FlightStatusCard extends React.Component {
                 </StepButton></Step></Stepper></Hidden>);
         } else {
             const labelProps = {};
-            let statusCaps = status.charAt(0).toUpperCase() + status.slice(1);
+            let statusCaps = this.mapStatus(status);
             labelProps.optional = (
                 <Typography variant="caption" color="error">
                     {statusCaps}
@@ -116,31 +126,123 @@ class FlightStatusCard extends React.Component {
 
     }
 
-    handleButtonClick = () => {
+    mapStatus(status) {
+        let statusCaps = "Unknown";
+        switch(status) {
+            case "C":
+                statusCaps = "Canceled";
+                break;
+            case "D":
+                statusCaps = "Diverted";
+                break;
+            case "DN":
+                statusCaps ="Data source needed";
+                break;
+            case "L":
+                statusCaps ="Landed";
+                break;
+            case "NO":
+                statusCaps ="Not Operational";
+                break;
+            case "R":
+                statusCaps ="Redirected";
+                break;
+            case "S":
+                statusCaps ="Scheduled";
+                break;
+            case "A":
+                statusCaps = "En-route";
+                break;
+            default:
+                statusCaps = "Unknown";
+        }
+        return statusCaps.charAt(0).toUpperCase() + statusCaps.slice(1);
+    }
+
+    removeSubscription(subscription) {
+        $.ajax('/api/v1/subscriptions/' + subscription.id+"?token="+this.props.current_user.token, {
+            method: "DELETE",
+            contentType: "application/json; charset=UTF-8",
+            error: function (jqXHR, textStatus, errorThrown) {
+                let response = JSON.parse(jqXHR.responseText);
+                let messages = ['Failed to remove alert']
+                if (jqXHR.status == 422) {
+                    Object.keys(response.errors).forEach(key => messages.push(key + ' ' + response.errors['' + key].join(",")));
+                    toast.error(messages.join('\n'));
+                } else {
+                    toast.error("We have encountered an unknown error. Please try again after sometime.");
+                }
+                this.setState({loading: false});
+
+            }, success: (resp) => {
+                toast.success("Alert removed.");
+                store.dispatch(deleted_subscription(subscription));
+                this.setState({loading: false});
+            }
+        });
+    }
+
+    addSubscription(flight_info) {
+
+        let data = {
+            token: this.props.current_user.token,
+            subscription: {
+                flightid: flight_info.flightId, userid: this.props.current_user.id,
+                airline_name: this.props.airline_name_map[flight_info.carrierFsCode],
+                srcia_iata: flight_info.departureAirportFsCode, dest_iata: flight_info.arrivalAirportFsCode,
+                flight_data: flight_info, flight_time: flight_info.departureDate.dateUtc, expired: false
+            }
+        };
+        $.ajax('/api/v1/subscriptions', {
+            method: "POST",
+            dataType: "json",
+            contentType: "application/json; charset=UTF-8",
+            data: JSON.stringify(data),
+            error: function (jqXHR, textStatus, errorThrown) {
+                let response = JSON.parse(jqXHR.responseText);
+                let messages = ['Failed to add new alert']
+                if (jqXHR.status == 422) {
+                    Object.keys(response.errors).forEach(key => messages.push(key + ' ' + response.errors['' + key].join(",")));
+                    toast.error(messages.join('\n'));
+                } else {
+                    toast.error("We have encountered an unknown error. Please try again after sometime.");
+                }
+                this.setState({loading: false});
+
+            }, success: (resp) => {
+                toast.success("Subscribed to alerts for flight " + flight_info.carrierFsCode + flight_info.flightNumber + ".");
+                store.dispatch(new_subscription(resp.data));
+                this.setState({loading: false});
+            }
+        });
+    }
+
+    handleButtonClick(flight_info) {
         if (!this.props.current_user || !this.props.current_user.token) {
             toast.warn('You need to login before setting up alerts');
             return;
         }
+
         if (!this.state.loading) {
-            this.setState(
-                {
-                    success: false,
-                    loading: true,
-                },
-                () => {
-                    this.timer = setTimeout(() => {
-                        this.setState({
-                            loading: false,
-                            success: true,
-                        });
-                    }, 2000);
-                },
-            );
+            this.setState({loading: true});
+            let existing_sub = (flight_info.flightId in this.props.flightid_subscription_map);
+            if (existing_sub) {
+                this.removeSubscription(this.props.flightid_subscription_map[flight_info.flightId]);
+            } else if (flight_info.status == "L") {
+                toast.warn("Landed flights not eligible for alerts.");
+                this.setState({loading: false});
+            } else {
+                // subscribe
+                this.addSubscription(flight_info);
+            }
         }
+
     };
 
     render() {
         const {classes} = this.props;
+        const flight_info = this.props.flight_info;
+        let existing_sub = (flight_info.flightId in this.props.flightid_subscription_map);
 
         return (
             <MuiThemeProvider theme={theme}>
@@ -154,24 +256,27 @@ class FlightStatusCard extends React.Component {
                         <CardContent>
                             <ListItem>
                                 <Chip
-                                    label={this.props.flight_info.flight.iataNumber}
+                                    label={flight_info.carrierFsCode + flight_info.flightNumber}
                                     className={classes.chip}
                                 />
-                                <ListItemText primary={this.props.flight_info.airline.name}/>
+                                <ListItemText primary={this.props.airline_name_map[flight_info.carrierFsCode]}/>
                             </ListItem>
 
                             <ListItem>
                                 <ListItemIcon>
                                     <FlightTakeoff nativeColor="blue"/>
                                 </ListItemIcon>
-                                <ListItemText primary={this.props.flight_info.departure.iataCode}/>
+                                <ListItemText primary={flight_info.departureAirportFsCode}/>
                                 <ListItemText
-                                    primary={moment(this.props.flight_info.departure.scheduledTime).format('MM/DD/YYYY h:mm a')}/>
+                                    primary={moment(flight_info.departureDate.dateLocal).format('MM/DD/YYYY h:mm a')}/>
                                 <Tooltip id="tooltip-origin-terminal" title="Boarding Terminal">
-                                    <ListItemText primary={this.props.flight_info.departure.terminal}/>
+                                    <ListItemText
+                                        primary={flight_info.airportResources.departureTerminal ? flight_info.airportResources.departureTerminal : ""}/>
                                 </Tooltip>
                                 <Tooltip id="tooltip-origin-gate" title="Boarding Gate">
-                                    <ListItemText primary={this.props.flight_info.departure.gate} color="primary"/>
+                                    <ListItemText
+                                        primary={flight_info.airportResources.departureGate ? flight_info.airportResources.departureGate : ""}
+                                        color="primary"/>
                                 </Tooltip>
                             </ListItem>
 
@@ -179,29 +284,32 @@ class FlightStatusCard extends React.Component {
                                 <ListItemIcon>
                                     <FlightLand nativeColor="red"/>
                                 </ListItemIcon>
-                                <ListItemText primary={this.props.flight_info.arrival.iataCode}/>
+                                <ListItemText primary={flight_info.arrivalAirportFsCode}/>
                                 <ListItemText
-                                    primary={moment(this.props.flight_info.arrival.scheduledTime).format('MM/DD/YYYY h:mm a')}/>
+                                    primary={moment(flight_info.arrivalDate.dateLocal).format('MM/DD/YYYY h:mm a')}/>
                                 <Tooltip id="tooltip-arrival-terminal" title="Arrival Terminal">
-                                    <ListItemText primary={this.props.flight_info.arrival.terminal}/>
+                                    <ListItemText
+                                        primary={flight_info.airportResources.arrivalTerminal ? flight_info.airportResources.arrivalTerminal : ""}/>
                                 </Tooltip>
                                 <Tooltip id="tooltip-arrival-gate" title="Arrival Gate">
-                                    <ListItemText primary={this.props.flight_info.arrival.gate}/>
+                                    <ListItemText
+                                        primary={flight_info.airportResources.arrivalGate ? flight_info.airportResources.arrivalGate : ""}/>
                                 </Tooltip>
                             </ListItem>
-                            {this.renderStepper(this.props.flight_info.status)}
+                            {this.renderStepper(flight_info.status)}
                         </CardContent>
                         <CardActions>
                             <div className={classes.wrapper}>
                                 <Button
                                     variant="fab"
                                     color="primary"
-                                    className={this.state.success ? classes.buttonSuccess : classes.buttonNew}
-                                    onClick={this.handleButtonClick}
+                                    className={existing_sub ? classes.buttonSuccess : classes.buttonNew}
+                                    onClick={() => this.handleButtonClick(flight_info)}
                                 >
-                                    {this.state.success ? <Email /> : <AddAlert />}
+                                    {existing_sub ? <Delete/> : <AddIcon/>}
                                 </Button>
-                                {this.state.loading && <CircularProgress size={68} className={classes.fabProgress} />}
+                                {this.state.loading ?
+                                    <CircularProgress size={68} className={classes.fabProgress}/> : null}
                             </div>
                         </CardActions>
                     </Card>
@@ -216,20 +324,21 @@ class FlightStatusCard extends React.Component {
 class FlightStatusView extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {flightinfo: [], loading: true}
+        this.state = {flightinfo: null, loading: true}
     }
 
     componentDidMount() {
         if (this.props.match.params.id) {
             $.get('/api/v1/flightstatus', {id: this.props.match.params.id}, (response) => {
                 let flightinfo = response.data;
-                this.setState({flightinfo: flightinfo});
+                this.setState({flightinfo: null});
 
             });
-        } else if (this.props.match.params.src && this.props.match.params.dest) {
+        } else if (this.props.match.params.src && this.props.match.params.dest && this.props.match.params.traveldate) {
             $.get('/api/v1/flightstatus', {
                 src: this.props.match.params.src,
-                dest: this.props.match.params.dest
+                dest: this.props.match.params.dest,
+                traveldate: this.props.match.params.traveldate
             }, (response, status, jqXHR) => {
                 if (jqXHR.status == 200) {
                     let flightinfo = response.data;
@@ -238,7 +347,7 @@ class FlightStatusView extends React.Component {
                 } else {
                     //TODO toast
                     alert('Search Failed to Yield Any Result');
-                    this.setState({flightinfo: [], loading: false});
+                    this.setState({flightinfo: null, loading: false});
                 }
 
             });
@@ -248,29 +357,74 @@ class FlightStatusView extends React.Component {
     render() {
         const {classes} = this.props;
         if (!this.props.match.params.id &&
-            (!this.props.match.params.src && !this.props.match.params.dest)) {
+            (!this.props.match.params.src && !this.props.match.params.dest && !this.props.match.params.traveldate)) {
             return (<Redirect to='/'/>);
         }
+        let flightdata = this.state.flightinfo;
+        let flightnoFilterFailed = false;
+        let filterFlightno = this.props.match.params.flightno;
+        let flightnoFilterIncluded = (filterFlightno && filterFlightno.trim().length > 0 ? true : false);
+        let airline_name_map = {};
+        let matching_dest_airport;
+        let matching_src_airport;
+        if (flightdata) {
+            flightdata.appendix.airlines.forEach(airline => airline_name_map[airline.fs] = airline.name);
+            flightdata.flightStatuses = flightdata.flightStatuses.filter((status) => status.airportResources);
+            if(flightnoFilterIncluded) {
+                filterFlightno = filterFlightno.split(' ').join('').toUpperCase();
+                let matchingFlights = flightdata.flightStatuses.filter(s => (s.carrierFsCode + s.flightNumber) == filterFlightno);
+                flightnoFilterFailed = matchingFlights.length <= 0;
+                flightdata.flightStatuses = (matchingFlights.length > 0) ? matchingFlights : flightdata.flightStatuses;
+            }
+            matching_src_airport = flightdata.appendix.airports.filter(a => a.iata == this.props.match.params.src)[0];
+            matching_dest_airport = flightdata.appendix.airports.filter(a => a.iata == this.props.match.params.dest)[0];
+        }
+        let flightid_subscription_map = {}
+        if (this.props.subscriptions) {
+            this.props.subscriptions.forEach(s => flightid_subscription_map['' + s.flightid] = s);
+        }
+
+
         return (
             <MuiThemeProvider theme={theme}>
                 <MenuBar history={this.props.history}/>
                 {this.state.loading ?
-                    <Grid><Grid item xs={12}><LinearProgress color="secondary" /></Grid></Grid>:
+                    <Grid><Grid item xs={12}><LinearProgress color="secondary"/></Grid></Grid> :
                     <Grid
-                    container
-                    spacing={24}
-                    alignItems='center'
-                    direction='row'
-                    justify='center'>
-                    <Grid key={-1} item xs={12}/>
-                    {this.state.flightinfo.map((flight_status, index) =>
-                        <Grid key={index} item xl={4} md={6} lg={4} xs={12} s={12}>
-                            <FlightStatusCard key={index} index={index}
-                                              flight_info={flight_status}
-                                              airports={this.props.airports}
-                                              classes={classes} current_user={this.props.current_user}/></Grid>)
+                        container
+                        spacing={24}
+                        alignItems='center'
+                        direction='row'
+                        justify='center'>
+                        <Grid key={-1} item xs={12}>
+                            <Paper className={classes.root} elevation={4}>
+                                <Typography variant="headline" color="primary" component="h3">
+                                    {matching_dest_airport && matching_src_airport ? matching_src_airport.name + ', '
+                                    + matching_src_airport.city + ' -- '
+                                    + matching_dest_airport.name + ', '
+                                    + matching_dest_airport.city
+                                        : this.props.match.params.src + " -- " + this.props.match.params.dest
+                                    }
+                                </Typography>
+                                <Typography variant="subheading">
+                                    {flightdata.flightStatuses.length + ' Matching Search Results.'}
+                                </Typography>
+                                <Typography variant="subheading" color="secondary">
+                                    {flightnoFilterFailed && flightnoFilterIncluded ? "We couldn't find a flight with the matching flight number. Here are some alternative flights available on the same date." : ""}
+                                </Typography>
+                            </Paper>
 
-                    }
+                        </Grid>
+                        {flightdata.flightStatuses.map((flight_status, index) =>
+                            <Grid key={index} item xl={4} md={6} lg={4} xs={12} s={12}>
+                                <FlightStatusCard key={flight_status.flightId} index={index}
+                                                  flight_info={flight_status}
+                                                  airports={this.props.airports}
+                                                  airline_name_map={airline_name_map}
+                                                  flightid_subscription_map={flightid_subscription_map}
+                                                  classes={classes} current_user={this.props.current_user}/></Grid>)
+
+                        }
                     </Grid>
                 }
             </MuiThemeProvider>
@@ -279,7 +433,7 @@ class FlightStatusView extends React.Component {
 }
 
 const mapStateToProps = state => {
-    return {airports: state.airports,current_user: state.current_user}
+    return {airports: state.airports, current_user: state.current_user, subscriptions: state.subscriptions}
 };
 
 const FlightStatus = connect(mapStateToProps)(FlightStatusView)

@@ -4,6 +4,7 @@ import classnames from 'classnames';
 import Card, {CardHeader, CardContent, CardActions} from 'material-ui/Card';
 import Collapse from 'material-ui/transitions/Collapse';
 import Flight from '@material-ui/icons/Flight';
+import FilterList from '@material-ui/icons/FilterList';
 import Avatar from 'material-ui/Avatar';
 import {FormControl, FormHelperText} from 'material-ui/Form';
 import Input, {InputLabel} from 'material-ui/Input'
@@ -16,7 +17,7 @@ import TextField from 'material-ui/TextField';
 import Paper from 'material-ui/Paper';
 import { MenuItem } from 'material-ui/Menu';
 import Downshift from 'downshift';
-import {update_adv_search_form, update_airports} from "./actions";
+import {update_adv_search_form, update_airports, update_login_form} from "./actions";
 import store, {empty_adv_search_form} from './store';
 import {connect} from "react-redux";
 import keycode from 'keycode';
@@ -159,6 +160,21 @@ class DownshiftMultiple extends React.Component {
             this.setState({
                 selectedItem: selectedItem.slice(0, selectedItem.length - 1),
             });
+        } else if (keycode(event) === 'tab' && selectedItem.length == 0) {
+            let result = getSuggestions(inputValue, this.props.airports);
+            if (result && result.length > 0) {
+                let item = result[0].iata;
+                let data = {};
+                data[this.props.name] = item;
+                store.dispatch(update_adv_search_form(data));
+                this.setState({inputValue: '',selectedItem: [item]});
+            } else {
+                let data = {};
+                data[this.props.name] = '';
+                store.dispatch(update_adv_search_form(data));
+                this.setState({inputValue: ''});
+            }
+
         }
     };
 
@@ -247,6 +263,7 @@ class FlightSearchView extends React.Component {
         super(props);
         this.state = {expanded: false};
         this.handleAdvanceSearch = this.handleAdvanceSearch.bind(this);
+        this.handleChange = this.handleChange.bind(this);
     }
 
     componentDidMount() {
@@ -260,14 +277,26 @@ class FlightSearchView extends React.Component {
         this.setState({expanded: !this.state.expanded});
     };
 
+    handleChange(event) {
+        let tgt = $(event.target);
+        let data = {};
+        data[tgt.attr('name')] = tgt.val();
+        store.dispatch(update_adv_search_form(data));
+    };
+
     handleAdvanceSearch() {
         let origin = this.props.adv_search_form.origin;
         let destination = this.props.adv_search_form.destination;
-        if (origin && destination) {
+        let traveldate = this.props.adv_search_form.traveldate;
+        let flightno = this.props.adv_search_form.flightnumber;
+        if (origin && destination && traveldate && flightno.trim().length == 0) {
             store.dispatch(update_adv_search_form(empty_adv_search_form));
-            this.props.history.push('/flightinfobyloc/'+origin+'/'+destination);
+            this.props.history.push('/flightinfobyloc/'+origin+'/'+destination+ '/'+traveldate);
+        } else if (origin && destination && traveldate && flightno.trim().length > 0) {
+            store.dispatch(update_adv_search_form(empty_adv_search_form));
+            this.props.history.push('/flightinfobylocfiltered/'+origin+'/'+destination+ '/'+traveldate+ '/' +flightno);
         } else {
-            toast.error('Origin/Destination airports missing');
+            toast.error('Origin/Destination airports & travel date are needed to search');
         }
 
     }
@@ -300,6 +329,19 @@ class FlightSearchView extends React.Component {
                                     <DownshiftMultiple classes={classes} airports={this.props.airports} name="destination" placeholder="Destination"/>
                                 </FormControl>
                                 <FormControl className={classes.formControl}>
+                                    <TextField
+                                        id="traveldate"
+                                        name="traveldate"
+                                        label="Flight Date"
+                                        type="date"
+                                        className={classes.textField}
+                                        onChange={this.handleChange}
+                                        InputLabelProps={{
+                                            shrink: true,
+                                        }}
+                                    />
+                                    </FormControl>
+                                <FormControl className={classes.formControl}>
                                     <Button variant="raised" color="primary" onClick={this.handleAdvanceSearch} className={classes.formControl}>
                                         Search
                                     </Button>
@@ -319,8 +361,8 @@ class FlightSearchView extends React.Component {
                                 aria-label="Show more"
                             >
 
-                                Advanced Search
-                                <ActionSettings className={classnames(classes.rightIcon, classes.iconSmall)}/>
+                                Additional Filters
+                                <FilterList className={classnames(classes.rightIcon, classes.iconSmall)}/>
                             </Button>
                         </CardActions>
                         <Collapse in={this.state.expanded} timeout="auto" unmountOnExit>
@@ -328,13 +370,8 @@ class FlightSearchView extends React.Component {
                                 <div>
                                     <FormControl className={classes.formControl}
                                                  aria-describedby="name-error-text">
-                                        <InputLabel htmlFor="flightnumber">Enter Flight Number</InputLabel>
-                                        <Input id="flightnumber" name="flightnumber" value="" onChange={this.handleChange}/>
-                                    </FormControl>
-                                    <FormControl className={classes.formControl}>
-                                        <Button size="medium" color="primary" variant="raised">
-                                            Go
-                                        </Button>
+                                        <InputLabel htmlFor="flightnumber">Filter By Flight Number</InputLabel>
+                                        <Input id="flightnumber" name="flightnumber" value={this.props.adv_search_form.flightnumber} onChange={this.handleChange}/>
                                     </FormControl>
                                 </div>
                             </CardContent>

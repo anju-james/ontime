@@ -1,7 +1,8 @@
 import {createStore, combineReducers} from 'redux';
 import {
     SIGNOUT, UPDATE_REGISTER_FORM, UPDATE_LOGIN_FORM, AUTHENTICATED, UPDATE_AIRPORTS,
-    UPDATE_FLIGHTINFO, UPDATE_ADV_SEARCH_FORM
+    UPDATE_FLIGHTINFO, UPDATE_ADV_SEARCH_FORM, FETCHED_SUBSCRIPTIONS, DELETED_SUBSCRIPTION,
+    NEW_SUBSCRIPTION
 } from './actions';
 
 
@@ -19,7 +20,8 @@ register_form: {name : ""
            }
  current_user: {},
  airports: [],
- adv_search_form : {origin: "", destination: ""}
+ adv_search_form : {origin: "", destination: "", traveldate: ""},
+ subscriptions: []
 
 }
  */
@@ -42,7 +44,9 @@ export let empty_register_form = {
 
 export let empty_adv_search_form = {
     origin: "",
-    destination: ""
+    destination: "",
+    traveldate: "",
+    flightnumber: ""
 };
 
 
@@ -104,10 +108,23 @@ function adv_search_form(state= empty_adv_search_form, action) {
     }
 }
 
+function subscriptions(state=[], action) {
+    switch(action.type) {
+        case FETCHED_SUBSCRIPTIONS:
+            return action.subscriptions;
+        case DELETED_SUBSCRIPTION:
+            return state.filter((subscription) => subscription.id != action.subscription.id);
+        case NEW_SUBSCRIPTION:
+            return [...state, action.subscription]
+        default:
+            return state;
+    }
+}
+
 
 const onTimeApp = combineReducers({
      current_user, register_form, login_form, airports,
-    flightinfo, adv_search_form
+    flightinfo, adv_search_form, subscriptions
 });
 
 

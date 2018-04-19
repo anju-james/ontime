@@ -4,7 +4,7 @@ defmodule Ontime.Repo.Migrations.AddPhFieldToUsers do
   def change do
     alter table(:users) do
       add :phonenumber, :string
+    end
   end
-end
 
 end
