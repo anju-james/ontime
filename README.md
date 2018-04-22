@@ -2,7 +2,7 @@
 
 ## A Real Time Flight Status Checker and Airport Chat Forum
 ### Team 661: Anju James, Arcy Flores
-##### You can visit the application [here](http://ontime.curiousmind.tech/)
+##### You can visit the application [here](https://ontime.curiousmind.tech/)
 ##### Github repo link to the ontime mobile application built using react-native can be accessed [here](https://github.com/anju-james/ontimeapp)
 
 
