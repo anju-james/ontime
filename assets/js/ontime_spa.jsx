@@ -3,6 +3,7 @@ import {Route, Switch, HashRouter, Redirect} from 'react-router-dom';
 import OnTimeHomePage from './ontime_homepage';
 import FlightStatus from './flight_status';
 import Subscriptions from './subscriptions';
+import AirportChat from './airport_chat'
 
 
 
@@ -20,6 +21,7 @@ class OntimeSpa extends React.Component {
                     <Route exact path='/flightinfobylocfiltered/:src/:dest/:traveldate/:flightno' component={FlightStatus}/>
                     <Route path='/flightinfobyloc/:src/:dest/:traveldate' component={FlightStatus}/>
                     <Route exact path='/subscriptions' component={Subscriptions}/>
+                    <Route exact path='/chat' component={AirportChat}/>
                     <Redirect from="*" to="/"/>
                 </Switch>
             </HashRouter>

@@ -13,9 +13,9 @@ import Register from './register';
 import {connect} from 'react-redux';
 import store from "./store";
 import {signout_user, fetched_subscriptions} from "./actions";
-import { ToastContainer, toast, Flip } from 'react-toastify';
+import {ToastContainer, toast, Flip} from 'react-toastify';
 import Hidden from 'material-ui/Hidden'
-import Menu, { MenuItem } from 'material-ui/Menu';
+import Menu, {MenuItem} from 'material-ui/Menu';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 
 
@@ -44,11 +44,13 @@ const styles = {
 export class MenuBarView extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {loginopen : false, registeropen: false, anchorEl: null};
+        this.state = {loginopen: false, registeropen: false, anchorEl: null};
         this.openLogin = this.openLogin.bind(this);
         this.openRegister = this.openRegister.bind(this);
         this.signout = this.signout.bind(this);
         this.subscriptions = this.subscriptions.bind(this);
+        this.home = this.home.bind(this);
+        this.chat = this.chat.bind(this);
         this.handleMenuClick = this.handleMenuClick.bind(this);
         this.handleMenuClose = this.handleMenuClose.bind(this);
     }
@@ -72,22 +74,22 @@ export class MenuBarView extends React.Component {
     }
 
     handleMenuClick(event) {
-        this.setState({ anchorEl: event.currentTarget });
+        this.setState({anchorEl: event.currentTarget});
     };
 
     handleMenuClose() {
-        this.setState({ anchorEl: null });
+        this.setState({anchorEl: null});
     };
 
 
     renderButtons() {
-        if(this.props.user && this.props.user.token ) {
-            return (<Button color="inherit" onClick={this.signout} >Signout</Button>);
+        if (this.props.user && this.props.user.token) {
+            return (<Button color="inherit" onClick={this.signout}>Signout</Button>);
         } else {
             return (
                 <div>
-                <Button color="inherit" onClick={this.openLogin}>Login</Button>
-                <Button color="inherit" onClick={this.openRegister}>Register</Button>
+                    <Button color="inherit" onClick={this.openLogin}>Login</Button>
+                    <Button color="inherit" onClick={this.openRegister}>Register</Button>
                 </div>);
         }
     }
@@ -100,36 +102,57 @@ export class MenuBarView extends React.Component {
 
     }
 
+    chat() {
+        this.handleMenuClose();
+        this.props.history.push("/chat");
+
+    }
+
+    home() {
+        this.handleMenuClose();
+        this.props.history.push("/");
+    }
+
     subscriptions() {
         this.handleMenuClose();
         this.props.history.push("/subscriptions");
-        
+
     }
 
     render() {
         let classes = this.props.classes;
-        const { anchorEl } = this.state;
+        const {anchorEl} = this.state;
         return (
             <MuiThemeProvider theme={theme}>
-                <AppBar position="sticky" style={{backgroundColor: (this.props.transparent? "transparent" : "blue[500]")}}>
+                <AppBar position="sticky"
+                        style={{backgroundColor: (this.props.transparent ? "transparent" : "blue[500]")}}>
                     <Toolbar>
-                        <IconButton onClick={() => this.props.history ? this.props.history.push("/") : null} className={classes.menuButton} color="inherit" aria-label="Menu">
+                        <IconButton onClick={() => this.props.history ? this.props.history.push("/") : null}
+                                    className={classes.menuButton} color="inherit" aria-label="Menu">
                             <Flight/>
                         </IconButton>
                         <Typography variant="title" color="inherit" className={classes.flex}>
                             OnTime
                         </Typography>
-                        <Hidden only={['sm', 'xs','md']}>
-                        {this.props.user && this.props.user.token ? <Button color="inherit" onClick={this.subscriptions} >Subscriptions</Button>
-                            : <Button color="inherit" onClick={this.openLogin}>Login</Button>}
-                        {this.props.user && this.props.user.token ? <Button color="inherit" onClick={this.signout} >Sign out</Button>
-                            : <Button color="inherit" onClick={this.openRegister}>Register</Button>}
+                        <Hidden only={['sm', 'xs', 'md']}>
+                            {this.props.user && this.props.user.token ?
+                                <Button color="inherit" onClick={this.home}>Home</Button>
+                                : null}
+                            {this.props.user && this.props.user.token ?
+                                <Button color="inherit" onClick={this.chat}>Chat</Button>
+                                : null}
+                            {this.props.user && this.props.user.token ?
+                                <Button color="inherit" onClick={this.subscriptions}>Subscriptions</Button>
+                                : <Button color="inherit" onClick={this.openLogin}>Login</Button>}
+                            {this.props.user && this.props.user.token ?
+                                <Button color="inherit" onClick={this.signout}>Sign out</Button>
+                                : <Button color="inherit" onClick={this.openRegister}>Register</Button>}
                         </Hidden>
-                        <Hidden only={['lg','xl']}>
+                        <Hidden only={['lg', 'xl']}>
                             <IconButton color="inherit"
-                                aria-owns={anchorEl ? 'simple-menu' : null}
-                                aria-haspopup="true"
-                                onClick={this.handleMenuClick}
+                                        aria-owns={anchorEl ? 'simple-menu' : null}
+                                        aria-haspopup="true"
+                                        onClick={this.handleMenuClick}
                             >
                                 <MoreVertIcon/>
                             </IconButton>
@@ -139,14 +162,23 @@ export class MenuBarView extends React.Component {
                                 open={Boolean(anchorEl)}
                                 onClose={this.handleMenuClose}
                             >
-                                {this.props.user && this.props.user.token ? <MenuItem onClick={this.subscriptions}>Subscriptions</MenuItem>
+                                {this.props.user && this.props.user.token ?
+                                    <MenuItem onClick={this.home}>Home</MenuItem>
+                                    : null}
+                                {this.props.user && this.props.user.token ?
+                                    <MenuItem onClick={this.chat}>Chat</MenuItem>
+                                    : null}
+                                {this.props.user && this.props.user.token ?
+                                    <MenuItem onClick={this.subscriptions}>Subscriptions</MenuItem>
                                     : <MenuItem onClick={this.openLogin}>Login</MenuItem>}
-                                {this.props.user && this.props.user.token ? <MenuItem onClick={this.signout}>Sign out</MenuItem>
+                                {this.props.user && this.props.user.token ?
+                                    <MenuItem onClick={this.signout}>Sign out</MenuItem>
                                     : <MenuItem onClick={this.openRegister}>Register</MenuItem>}
                             </Menu>
                         </Hidden>
-                        {this.state.loginopen ? <Login open={true} handleClose={() => this.closeLogin()} /> : null}
-                        {this.state.registeropen ? <Register open={true} handleClose={() => this.closeRegister()} /> :null}
+                        {this.state.loginopen ? <Login open={true} handleClose={() => this.closeLogin()}/> : null}
+                        {this.state.registeropen ?
+                            <Register open={true} handleClose={() => this.closeRegister()}/> : null}
                         <div>
                         </div>
                     </Toolbar>

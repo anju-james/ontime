@@ -144,9 +144,11 @@ function getSuggestions(inputValue, suggestions) {
 class DownshiftMultiple extends React.Component {
     constructor(props) {
         super(props);
+        let storeValue = this.props.adv_search_form[this.props.name];
+        let initialValue = storeValue && storeValue.trim().length > 0 ? [storeValue] : [];
         this.state = {
             inputValue: '',
-            selectedItem: [],
+            selectedItem: initialValue,
         };
     }
 
@@ -261,7 +263,9 @@ class DownshiftMultiple extends React.Component {
 class FlightSearchView extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {expanded: false};
+        let flightnumber = this.props.adv_search_form.flightnumber;
+        let openExpanded = (flightnumber && flightnumber.trim().length > 0) ? true : false;
+        this.state = {expanded: openExpanded};
         this.handleAdvanceSearch = this.handleAdvanceSearch.bind(this);
         this.handleChange = this.handleChange.bind(this);
     }
@@ -289,11 +293,9 @@ class FlightSearchView extends React.Component {
         let destination = this.props.adv_search_form.destination;
         let traveldate = this.props.adv_search_form.traveldate;
         let flightno = this.props.adv_search_form.flightnumber;
-        if (origin && destination && traveldate && flightno.trim().length == 0) {
-            store.dispatch(update_adv_search_form(empty_adv_search_form));
+        if (origin && destination && traveldate && flightno.trim().length == 0) {            
             this.props.history.push('/flightinfobyloc/'+origin+'/'+destination+ '/'+traveldate);
-        } else if (origin && destination && traveldate && flightno.trim().length > 0) {
-            store.dispatch(update_adv_search_form(empty_adv_search_form));
+        } else if (origin && destination && traveldate && flightno.trim().length > 0) {        
             this.props.history.push('/flightinfobylocfiltered/'+origin+'/'+destination+ '/'+traveldate+ '/' +flightno);
         } else {
             toast.error('Origin/Destination airports & travel date are needed to search');
@@ -322,11 +324,13 @@ class FlightSearchView extends React.Component {
                             <div>
                                 <FormControl fullWidth={true} className={classes.formControl}
                                              aria-describedby="name-error-text">
-                                    <DownshiftMultiple classes={classes} airports={this.props.airports} name="origin" placeholder="Origin"/>
+                                    <DownshiftMultiple classes={classes} airports={this.props.airports} 
+                                    adv_search_form={this.props.adv_search_form} name="origin" placeholder="Origin"/>
                                 </FormControl>
                                 <FormControl fullWidth={true} className={classes.formControl}
                                              aria-describedby="name-error-text">
-                                    <DownshiftMultiple classes={classes} airports={this.props.airports} name="destination" placeholder="Destination"/>
+                                    <DownshiftMultiple classes={classes} airports={this.props.airports} 
+                                    adv_search_form={this.props.adv_search_form} name="destination" placeholder="Destination"/>
                                 </FormControl>
                                 <FormControl className={classes.formControl}>
                                     <TextField
@@ -334,6 +338,7 @@ class FlightSearchView extends React.Component {
                                         name="traveldate"
                                         label="Flight Date"
                                         type="date"
+                                        defaultValue={this.props.adv_search_form.traveldate}
                                         className={classes.textField}
                                         onChange={this.handleChange}
                                         InputLabelProps={{

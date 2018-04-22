@@ -7,6 +7,7 @@ defmodule Ontime.Accounts do
   alias Ontime.Repo
 
   alias Ontime.Accounts.User
+  alias Ontime.Accounts.Chat
 
   @doc """
   Returns the list of users.
@@ -53,6 +54,16 @@ defmodule Ontime.Accounts do
     %User{}
     |> User.changeset(attrs)
     |> Repo.insert()
+  end
+
+  def create_chat(attrs \\ %{}) do
+    %Chat{}
+    |> Chat.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def last_n_chat_messages(airport, n) do
+    Repo.all(from c in Chat, where: c.airport_iata == ^airport, order_by: [desc: :send_time], limit: ^n )
   end
 
   @doc """

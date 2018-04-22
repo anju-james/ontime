@@ -8,6 +8,9 @@ export const UPDATE_ADV_SEARCH_FORM = 'UPDATE_ADV_SEARCH_FORM';
 export const FETCHED_SUBSCRIPTIONS = 'FETCHED_SUBSCRIPTIONS';
 export const DELETED_SUBSCRIPTION = 'DELETED_SUBSCRIPTION';
 export const NEW_SUBSCRIPTION = 'NEW_SUBSCRIPTION';
+export const JOIN_CHATROOM = 'JOIN_CHATROOM';
+export const LEAVE_CHATROOM = 'LEAVE_CHATROOM';
+
 
 
 export function current_user(user) {
@@ -48,4 +51,12 @@ export function deleted_subscription(subscription) {
 
 export function new_subscription(subscription) {
     return {type: NEW_SUBSCRIPTION, subscription: subscription};
+}
+
+export function join_chatroom(airportname) {
+    return {type: JOIN_CHATROOM, airportname: airportname};
+}
+
+export function leave_chatroom(airportname) {
+    return {type: LEAVE_CHATROOM, airportname: airportname};
 }

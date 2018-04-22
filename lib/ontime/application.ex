@@ -12,6 +12,7 @@ defmodule Ontime.Application do
       supervisor(Ontime.Repo, []),
       # Start the endpoint when the application starts
       supervisor(OntimeWeb.Endpoint, []),
+      supervisor(OntimeWeb.Presence, []),
       # Start your own worker by calling: Ontime.Worker.start_link(arg1, arg2, arg3)
       worker(Ontime.AviationAgent, []),
       worker(Ontime.MessageService, []),
