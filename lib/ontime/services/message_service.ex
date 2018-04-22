@@ -22,27 +22,27 @@ defmodule Ontime.MessageService do
     {:noreply, state}
   end
 
-  def handle_cast({:subscribe,:email, payload}, state) do
+  def handle_cast({:subscribe, :email, payload}, state) do
     [user, subscription] = payload
-    UserEmail.subscribe(user,subscription)
+    UserEmail.subscribe(user, subscription)
     |> Mailer.deliver
     {:noreply, state}
   end
 
-  def handle_cast({:subscribe,:sms, payload}, state) do
+  def handle_cast({:subscribe, :sms, payload}, state) do
     [user, subscription] = payload
     UserSMS.subscribe_sms(user, subscription)
     {:noreply, state}
   end
 
-  def handle_cast({:notify,:email, payload}, state) do
+  def handle_cast({:notify, :email, payload}, state) do
     [user, subscription] = payload
-    UserEmail.notify(user,subscription)
+    UserEmail.notify(user, subscription)
     |> Mailer.deliver
     {:noreply, state}
   end
 
-  def handle_cast({:notify,:sms, payload}, state) do
+  def handle_cast({:notify, :sms, payload}, state) do
     [user, subscription] = payload
     UserSMS.notify_sms(user, subscription)
     {:noreply, state}
@@ -52,8 +52,7 @@ defmodule Ontime.MessageService do
   def handle_cast({:sms, :register, user}, state) do
     UserSMS.send_sms(
       user.phonenumber,
-      "Welcome Onboard. Thanks for signing up with Ontime. You can login add or change your alert
-      from the website https://ontime.curiousmind.tech"
+      "Welcome Onboard. Thanks for signing up with Ontime. You add or change your alerts from the website https://ontime.curiousmind.tech"
     )
     {:noreply, state}
   end

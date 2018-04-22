@@ -20,7 +20,7 @@ register_form: {name : ""
            }
  current_user: {},
  airports: [],
- adv_search_form : {origin: "", destination: "", traveldate: ""},
+ adv_search_form : {origin: "", destination: "", traveldate: "", flightnumber: ""},
  subscriptions: []
  airportchatroom: '',
 
