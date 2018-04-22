@@ -3,6 +3,7 @@
 ## A Real Time Flight Status Checker and Airport Chat Forum
 ### Team 661: Anju James, Arcy Flores
 ##### You can visit the application [here](http://ontime.curiousmind.tech/)
+##### Github repo link to the ontime mobile application built using react-native can be accessed [here](https://github.com/anju-james/ontimeapp)
 
 
 ### Ontime Application Features 
@@ -20,6 +21,10 @@ The users are also given the option to subscribe for alerts for specific flights
 A real-time airport discussion/chat forum available for every airports in US where users can post questions or incidents related to airports or other relevant information that might impact travel. 
 
 =======================================================================
+
+##### Front-end built using React
+##### Back-End built using Elixir
+##### CSS Framework : material-ui-next
 
 To start your Phoenix server:
 
