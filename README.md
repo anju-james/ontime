@@ -22,9 +22,13 @@ A real-time airport discussion/chat forum available for every airports in US whe
 
 =======================================================================
 
-##### Front-end built using React
-##### Back-End built using Elixir
-##### CSS Framework : material-ui-next
+#### Front-end built using React
+#### Back-End built using Elixir
+#### CSS Framework : material-ui-next
+
+=======================================================================
+
+
 
 To start your Phoenix server:
 
