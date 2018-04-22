@@ -2,7 +2,7 @@ import {createStore, combineReducers} from 'redux';
 import {
     SIGNOUT, UPDATE_REGISTER_FORM, UPDATE_LOGIN_FORM, AUTHENTICATED, UPDATE_AIRPORTS,
     UPDATE_FLIGHTINFO, UPDATE_ADV_SEARCH_FORM, FETCHED_SUBSCRIPTIONS, DELETED_SUBSCRIPTION,
-    NEW_SUBSCRIPTION
+    NEW_SUBSCRIPTION, JOIN_CHATROOM,LEAVE_CHATROOM
 } from './actions';
 
 
@@ -20,8 +20,9 @@ register_form: {name : ""
            }
  current_user: {},
  airports: [],
- adv_search_form : {origin: "", destination: "", traveldate: ""},
+ adv_search_form : {origin: "", destination: "", traveldate: "", flightnumber: ""},
  subscriptions: []
+ airportchatroom: '',
 
 }
  */
@@ -121,10 +122,21 @@ function subscriptions(state=[], action) {
     }
 }
 
+function airportchatroom(state='', action) {
+    switch(action.type) {
+        case LEAVE_CHATROOM:
+            return '';
+        case JOIN_CHATROOM:
+            return action.airportname;
+        default:
+            return state;
+    }
+}
+
 
 const onTimeApp = combineReducers({
      current_user, register_form, login_form, airports,
-    flightinfo, adv_search_form, subscriptions
+    flightinfo, adv_search_form, subscriptions,airportchatroom
 });
 
 
